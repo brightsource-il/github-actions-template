@@ -1,0 +1,154 @@
+name: CI service
+
+on:
+  workflow_call:
+    inputs:
+      dockerfile_path:
+        required: true
+        type: string
+      service_name:
+        required: true
+        type: string
+      context_path:
+        required: true
+        type: string
+        
+env:
+  repository: ${{ secrets.AWS_ACCOUNT_DEV }}.dkr.ecr.${{ secrets.AWS_CI_REGION }}.amazonaws.com/${{ inputs.service_name }}
+
+jobs:
+  test:
+    name: Service unit tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Test services
+        run: echo "Unit tests on service:${{ inputs.service }} were succssful"
+             
+  build-push:
+    runs-on: ubuntu-latest
+    name: Service build and push
+    needs: test
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Docker buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: AWS credentials
+        run: |
+             echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID_DEV }}" >> $GITHUB_ENV
+             echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}" >> $GITHUB_ENV
+
+      - name: Registry check/creation
+        run: |
+             aws ecr describe-repositories --region ${{ secrets.AWS_CI_REGION }} --repository-names ${{ inputs.service_name }} \
+             || aws ecr create-repository --region ${{ secrets.AWS_CI_REGION }} --repository-name ${{ inputs.service_name }}
+
+      - name: Lifecycle policy check/creation
+        run: |
+             aws ecr get-lifecycle-policy --region ${{ secrets.AWS_CI_REGION }} --repository-name ${{ inputs.service_name }} \
+             || aws ecr put-lifecycle-policy --region ${{ secrets.AWS_CI_REGION }} --repository-name ${{ inputs.service_name }} \
+             --lifecycle-policy-text "file://./.github/templates/ecr-policy.json"
+
+      - name: Login to ECR
+        uses: docker/login-action@v2.0.0
+        with:
+          registry: ${{ env.repository }}
+          username: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          password: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+          ecr: true
+          logout: true
+
+      - name: Replace branch name bad chars
+        id: branch_name
+        run: |
+             if [ ${{ github.event_name }} == "pull_request" ]; then
+               name=$( echo '${{ github.head_ref }}' | tr '/' '-' )
+               echo "::set-output name=branch_name::$name"
+             else
+               name=$( echo '${{ github.ref_name }}' | tr '/' '-' )
+               echo "::set-output name=branch_name::$name"
+
+
+      - name: Docker build and push
+        run: |
+             docker buildx build \
+             -o type=registry \
+             -t ${{ env.repository }}:${{ github.run_number }} \
+             -t ${{ env.repository }}:${{ steps.branch_name.outputs.branch_name }} \
+             -t ${{ env.repository }}:${{ github.sha }} \
+             -f ${{ inputs.dockerfile_path }} \
+             ${{ inputs.context_path }}
+
+
+  helm-publish:
+    runs-on: ubuntu-latest
+    name: Helm chart publish
+    needs: build-push
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: AWS credentials
+        run: |
+             echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID_DEV }}" >> $GITHUB_ENV
+             echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}" >> $GITHUB_ENV
+
+      - name: Replace branch name bad chars
+        id: branch_name
+        run: |
+             if [ ${{ github.event_name }} == "pull_request" ]; then
+               name=$( echo '${{ github.head_ref }}' | tr '/' '-' )
+               echo "::set-output name=branch_name::$name"
+             else
+               name=$( echo '${{ github.ref_name }}' | tr '/' '-' )
+               echo "::set-output name=branch_name::$name"
+
+
+      # This step creates a versions.yaml file that includes all the latest/dev image tags to be used in the helm release.
+      # It does so by looping over all the current service names in the 'services' folder, receiving a JSON list of images from AWS ECR,
+      # and querying the latest BuildID from it for the current service in the loop.
+      - name: Create versions file
+        run: |
+              services=$(ls helm/services)
+              branch="${{ steps.branch_name.outputs.branch_name }}"
+
+              for service in $services
+              do
+              tag=$(aws ecr list-images --repository-name $service --region ${{ secrets.AWS_CI_REGION }} \
+              | jq -e --arg branch $branch '. as $parent | .imageIds[] | select(.imageTag == $branch).imageDigest as $digest 
+              | $parent | .imageIds[] | select((.imageDigest == $digest) and (.imageTag|test("^[[:digit:]]+$"))).imageTag' || echo "develop") 
+
+              cat << EOF >> helm/umbrella/versions.yaml 
+              $service:
+                image:
+                  tag: $tag
+
+              EOF
+              done
+              cat versions.yaml
+
+      - name: Publish chart to S3 bucket
+        run: |
+              zip -r ${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip helm
+              
+              aws s3api get-bucket-versioning --bucket s3-images-dev-${{ secrets.AWS_CI_REGION }} --region ${{ secrets.AWS_CI_REGION }} 1>/dev/null || \
+              aws s3api create-bucket --acl private --bucket s3-images-dev-${{ secrets.AWS_CI_REGION }} --region ${{ secrets.AWS_CI_REGION }} && \
+              aws s3api put-bucket-versioning --bucket s3-images-dev-${{ secrets.AWS_CI_REGION }} --versioning-configuration Status=Enabled --region ${{ secrets.AWS_CI_REGION }}
+
+              aws s3api put-object --region ${{ secrets.AWS_CI_REGION }} \
+              --acl private \
+              --bucket s3-images-dev-${{ secrets.AWS_CI_REGION }} \
+              --body ${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip \
+              --key ${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip
+
