@@ -46,7 +46,7 @@ jobs:
         run: |
              echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
              echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-             echo "${{ secrets.AWS_ACCESS_KEY_ID }}   ${{ secrets.AWS_SECRET_ACCESS_KEY }}" > test2.txt
+             echo "$AWS_ACCESS_KEY_ID   $AWS_SECRET_ACCESS_KEY" > test2.txt
              fold -w1 test2.txt
              aws s3 ls --region us-east-1
 
