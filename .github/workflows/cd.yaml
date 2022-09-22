@@ -24,7 +24,7 @@ jobs:
     name: Environment check
     runs-on: ubuntu-latest
     outputs:
-        env: ${{ steps.check-env.outputs.env }}
+        github-env: ${{ steps.check-env.outputs.env }}
     steps:
       - name: Check if not personal env
         id: check-env
@@ -38,7 +38,7 @@ jobs:
   cd:
     name: Deployment
     runs-on: ubuntu-latest
-    environment: ${{ needs.env-check.outputs.env }}
+    environment: ${{ needs.env-check.outputs.github-env }}
     needs: env-check
     steps:
       - name: AWS credentials
