@@ -1,0 +1,65 @@
+name: 'CD'
+
+on:
+  workflow_call:
+    inputs:
+      env: 
+        required: true
+        type: string
+        default: dev
+      account:
+        required: true
+        type: string
+      region:
+        required: true
+        type: string
+
+
+permissions:
+  contents: read
+
+
+jobs:
+  env-check:
+    name: Environment check
+    runs-on: ubuntu-latest
+    outputs:
+        env: ${{ steps.check-env.outputs.env }}
+    steps:
+      - name: Check if not personal env
+        id: check-env
+        run: |
+             if [ ${{ inputs.env }} != "dev" ] && [ ${{ inputs.env }} != "qa" ] && [ ${{ inputs.env }} != "staging" ] && [ ${{ inputs.env }} != "prod" ]
+             then
+               echo "::set-output name:env::dev"
+             else
+               echo "::set-output name:env::${{ inputs.env }}"
+
+  cd:
+    name: Deployment
+    runs-on: ubuntu-latest
+    environment: ${{ needs.env-check.outputs.env }}
+    needs: env-check
+    steps:
+      - name: AWS credentials
+        run: |
+             echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+             echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+             aws s3 ls
+
+
+      # - name: Download Helm chart
+      #   run: |
+             
+
+
+      # - name: Deploy helm chart
+      #   run: |
+      #        helm upgrade PLACEHOLDERD \
+      #        --install \
+      #        --atomic \
+      #        --create-namespace \
+      #        --dependency-update \
+      #        --wait \
+      #        -f ${{ inputs.env }}_values.yaml \
+      #        -f 
