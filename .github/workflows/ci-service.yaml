@@ -136,7 +136,7 @@ jobs:
               do
               tag=$(aws ecr list-images --repository-name $service --region ${{ secrets.AWS_CI_REGION }} \
               | jq -e --arg branch $branch '. as $parent | .imageIds[] | select(.imageTag == $branch).imageDigest as $digest 
-              | $parent | .imageIds[] | select((.imageDigest == $digest) and (.imageTag|test("^[[:digit:]]+$"))).imageTag' || echo "develop")
+              | $parent | .imageIds[] | select((.imageDigest == $digest) and (.imageTag|test("^[[:digit:]]+$"))).imageTag' || echo "dev")
 
               cat << EOF >> helm/umbrella/versions.yaml 
               $service:
