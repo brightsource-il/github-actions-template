@@ -153,11 +153,20 @@ jobs:
               
               aws s3api get-bucket-versioning --bucket s3-charts-dev-${{ secrets.AWS_CI_REGION }} --region ${{ secrets.AWS_CI_REGION }} 1>/dev/null || \
               aws s3api create-bucket --acl private --bucket s3-charts-dev-${{ secrets.AWS_CI_REGION }} --region ${{ secrets.AWS_CI_REGION }} && \
-              aws s3api put-bucket-versioning --bucket s3-charts-dev-${{ secrets.AWS_CI_REGION }} --versioning-configuration Status=Enabled --region ${{ secrets.AWS_CI_REGION }}
+              aws s3api put-bucket-versioning --bucket s3-charts-dev-${{ secrets.AWS_CI_REGION }} --versioning-configuration Status=Enabled --region ${{ secrets.AWS_CI_REGION }} && \
+              aws s3api put-bucket-lifecycle-configuration --bucket s3-charts-dev-${{ secrets.AWS_CI_REGION }} --region ${{ secrets.AWS_CI_REGION }} \
+              --lifecycle-configuration  file://./.github/templates/chart-lifecycle-policy.json
 
-              aws s3api put-object --region ${{ secrets.AWS_CI_REGION }} \
-              --acl private \
-              --bucket s3-charts-dev-${{ secrets.AWS_CI_REGION }} \
-              --body ${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip \
-              --key ${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip
-
+              if [ ${{ steps.branch_name.outputs.branch_name }} != 'dev' ]; then
+                aws s3api put-object --region ${{ secrets.AWS_CI_REGION }} \
+                --acl private \
+                --bucket s3-charts-dev-${{ secrets.AWS_CI_REGION }} \
+                --body ${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip \
+                --key temp/${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip
+              else
+                aws s3api put-object --region ${{ secrets.AWS_CI_REGION }} \
+                --acl private \
+                --bucket s3-charts-dev-${{ secrets.AWS_CI_REGION }} \
+                --body ${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip \
+                --key dev/${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip
+              fi
