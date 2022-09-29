@@ -53,11 +53,6 @@ jobs:
       - name: Setup Docker buildx
         uses: docker/setup-buildx-action@v1
 
-      # - name: AWS credentials
-      #   run: |
-      #        echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
-      #        echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-
       - name: Registry check/creation
         run: |
              aws ecr describe-repositories --repository-names ${{ inputs.service_name }} \
@@ -89,21 +84,33 @@ jobs:
                echo "::set-output name=branch_name::$name"
              fi
 
-
+      # Only push image to registry on "push" events.
       - name: Docker build and push
         run: |
-             docker buildx build \
-             -o type=registry \
-             -t ${{ inputs.environment }}.${{ env.repository }}:${{ github.run_number }} \
-             -t ${{ inputs.environment }}.${{ env.repository }}:${{ steps.branch_name.outputs.branch_name }} \
-             -t ${{ inputs.environment }}.${{ env.repository }}:${{ github.sha }} \
-             -f ${{ inputs.dockerfile_path }} \
-             ${{ inputs.context_path }}
+             if [ ${{ github.event_name == 'push' }} ]; then
+               docker buildx build \
+               -o type=registry \
+               -t ${{ inputs.environment }}.${{ env.repository }}:${{ github.run_number }} \
+               -t ${{ inputs.environment }}.${{ env.repository }}:${{ steps.branch_name.outputs.branch_name }} \
+               -t ${{ inputs.environment }}.${{ env.repository }}:${{ github.sha }} \
+               -f ${{ inputs.dockerfile_path }} \
+               ${{ inputs.context_path }}
+             else
+               docker buildx build \
+               -o type=image \
+               -t ${{ inputs.environment }}.${{ env.repository }}:${{ github.run_number }} \
+               -t ${{ inputs.environment }}.${{ env.repository }}:${{ steps.branch_name.outputs.branch_name }} \
+               -t ${{ inputs.environment }}.${{ env.repository }}:${{ github.sha }} \
+               -f ${{ inputs.dockerfile_path }} \
+               ${{ inputs.context_path }}    
+             fi         
+               
 
 
   helm-publish:
     runs-on: ubuntu-latest
     name: Helm chart publish
+    if: ${{ github.event_name == 'push' }}
     environment: ${{ inputs.environment }}    
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -115,11 +122,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
-      # - name: AWS credentials
-      #   run: |
-      #        echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
-      #        echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
 
       - name: Replace branch name bad chars
         id: branch_name
