@@ -94,9 +94,9 @@ jobs:
         run: |
              docker buildx build \
              -o type=registry \
-             -t ${{ secrets.AWS_ACCOUNT }}.${{ env.repository }}:${{ github.run_number }} \
-             -t ${{ secrets.AWS_ACCOUNT }}.${{ env.repository }}:${{ steps.branch_name.outputs.branch_name }} \
-             -t ${{ secrets.AWS_ACCOUNT }}.${{ env.repository }}:${{ github.sha }} \
+             -t ${{ inputs.environment }}.${{ env.repository }}:${{ github.run_number }} \
+             -t ${{ inputs.environment }}.${{ env.repository }}:${{ steps.branch_name.outputs.branch_name }} \
+             -t ${{ inputs.environment }}.${{ env.repository }}:${{ github.sha }} \
              -f ${{ inputs.dockerfile_path }} \
              ${{ inputs.context_path }}
 
