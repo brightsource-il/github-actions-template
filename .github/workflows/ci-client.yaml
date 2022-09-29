@@ -11,7 +11,11 @@ on:
         type: string
       context_path:
         required: true
-        type: string        
+        type: string
+      environment:
+        type: string
+        default: "479886561928"
+        description: Default dev env
 
 jobs:
   # Client, not dockerized
@@ -47,6 +51,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     name: Client build and upload
+    environment: ${{ inputs.environment }}
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}    
     needs: test
     permissions:
       contents: read
@@ -87,6 +95,7 @@ jobs:
              fi
 
       - name: Publish client artifact to S3 bucket
+        if: ${{ github.event_name }} == 'push'
         run: |
               zip -r ${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip ${{ inputs.context_path }}/dist
               
