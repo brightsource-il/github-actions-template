@@ -54,7 +54,8 @@ jobs:
     environment: ${{ inputs.environment }}
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}    
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}   
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_CI_REGION }}       
     needs: test
     permissions:
       contents: read
@@ -77,12 +78,6 @@ jobs:
         working-directory: ${{ inputs.context_path }}
         run: ng build
 
-      - name: Publish artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: client.zip
-          path: ${{ inputs.context_path }}/dist
-
       - name: Replace branch name bad chars
         id: branch_name
         run: |
@@ -95,24 +90,24 @@ jobs:
              fi
 
       - name: Publish client artifact to S3 bucket
-        if: ${{ github.event_name }} == 'push'
+        if: ${{ github.event_name == 'push' }} 
         run: |
               zip -r ${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip ${{ inputs.context_path }}/dist
               
-              aws s3api get-bucket-versioning --bucket s3-client-${{ secrets.AWS_CI_REGION }} --region ${{ secrets.AWS_CI_REGION }} 1>/dev/null || \
-              aws s3api create-bucket --acl private --bucket s3-client-${{ secrets.AWS_CI_REGION }} --region ${{ secrets.AWS_CI_REGION }} && \
-              aws s3api put-bucket-versioning --bucket s3-client-${{ secrets.AWS_CI_REGION }} --versioning-configuration Status=Enabled --region ${{ secrets.AWS_CI_REGION }} && \
-              aws s3api put-bucket-lifecycle-configuration --bucket s3-client-${{ secrets.AWS_CI_REGION }} --region ${{ secrets.AWS_CI_REGION }} \
+              aws s3api get-bucket-versioning --bucket s3-client-${{ secrets.AWS_CI_REGION }} 1>/dev/null || \
+              aws s3api create-bucket --acl private --bucket s3-client-${{ secrets.AWS_CI_REGION }} && \
+              aws s3api put-bucket-versioning --bucket s3-client-${{ secrets.AWS_CI_REGION }} --versioning-configuration Status=Enabled && \
+              aws s3api put-bucket-lifecycle-configuration --bucket s3-client-${{ secrets.AWS_CI_REGION }} \
               --lifecycle-configuration  file://./.github/templates/client-lifecycle-policy.json
 
               if [ ${{ steps.branch_name.outputs.branch_name }} != 'dev' ]; then
-                aws s3api put-object --region ${{ secrets.AWS_CI_REGION }} \
+                aws s3api put-object \
                 --acl private \
                 --bucket s3-client-${{ secrets.AWS_CI_REGION }} \
                 --body ${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip \
                 --key temp/${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip
               else
-                aws s3api put-object --region ${{ secrets.AWS_CI_REGION }} \
+                aws s3api put-object \
                 --acl private \
                 --bucket s3-client-${{ secrets.AWS_CI_REGION }} \
                 --body ${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip \
