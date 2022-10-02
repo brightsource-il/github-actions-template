@@ -102,7 +102,7 @@ jobs:
                $parent.Contents[].Key | select(test($buildId+"-"))' | sed 's/"//g'
              }
 
-             key=$(getKey ${{ env.charts_bucket }} ${{ inputs.branch }} || getKey ${{ env.charts_bucket }} dev)
+             key=$(getKey ${{ env.charts_bucket }} ${{ inputs.branch }} || getKey ${{ env.client_bucket }} dev)
              echo "Key: $key"
 
              aws s3api get-object --bucket ${{ env.client_bucket }} \
