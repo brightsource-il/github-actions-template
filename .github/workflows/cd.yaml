@@ -81,7 +81,7 @@ jobs:
         run: |
              helm dependency build helm/umbrella
              helm upgrade bse-${{ inputs.env }} helm/umbrella \
-             --namespace ${{ inputs.env }}
+             --namespace ${{ inputs.env }} \
              --install \
              --atomic \
              --create-namespace \
