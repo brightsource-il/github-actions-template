@@ -59,11 +59,11 @@ jobs:
       - name: Download Helm chart
         run: |
              function getKey() {
-             aws s3api list-objects --bucket $1 | \
-             jq -e --arg branch $2 \
-             '. as $parent | [.Contents[].Key | split("/")[1] | select(test($branch+".zip")) | split("-")[0] | tonumber] 
-             | max | tostring | . as $buildId |
-             $parent.Contents[].Key | select(test($buildId+"-"))' | sed 's/"//g'
+               aws s3api list-objects --bucket $1 | \
+               jq -e --arg branch $2 \
+               '. as $parent | [.Contents[].Key | split("/")[1] | select(test($branch+".zip")) | split("-")[0] | tonumber] 
+               | max | tostring | . as $buildId |
+               $parent.Contents[].Key | select(test($buildId+"-"))' | sed 's/"//g'
              }
 
              key=$(getKey ${{ env.charts_bucket }} ${{ inputs.branch }})
@@ -90,12 +90,13 @@ jobs:
 
       - name: Download client
         run: |
+             set -Eeuo pipefail
              function getKey() {
-             aws s3api list-objects --bucket $1 | \
-             jq -e --arg branch $2 \
-             '. as $parent | [.Contents[].Key | split("/")[1] | select(test($branch+".zip")) | split("-")[0] | tonumber] 
-             | max | tostring | . as $buildId |
-             $parent.Contents[].Key | select(test($buildId+"-"))' | sed 's/"//g'
+               aws s3api list-objects --bucket $1 | \
+               jq -e --arg branch $2 \
+               '. as $parent | [.Contents[].Key | split("/")[1] | select(test($branch+".zip")) | split("-")[0] | tonumber] 
+               | max | tostring | . as $buildId |
+               $parent.Contents[].Key | select(test($buildId+"-"))' | sed 's/"//g'
              }
 
              key=$(getKey ${{ env.charts_bucket }} ${{ inputs.branch }} || getKey ${{ env.charts_bucket }} dev)
