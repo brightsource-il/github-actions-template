@@ -58,7 +58,10 @@ jobs:
     steps:
       - name: Download Helm chart
         run: |
+             set -Eeuo pipefail
              function getKey() {
+               echo $1
+               echo $2
                aws s3api list-objects --bucket $1 | \
                jq -e --arg branch $2 \
                '. as $parent | [.Contents[].Key | split("/")[1] | select(test($branch+".zip")) | split("-")[0] | tonumber] 
