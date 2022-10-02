@@ -68,6 +68,7 @@ jobs:
              }
 
              key=$(getKey ${{ env.charts_bucket }} ${{ inputs.branch }})
+             echo "Key" $key"
 
              aws s3api get-object --bucket ${{ env.charts_bucket }} \
              --key $key chart.zip
@@ -102,6 +103,7 @@ jobs:
              }
 
              key=$(getKey ${{ env.charts_bucket }} ${{ inputs.branch }} || getKey ${{ env.charts_bucket }} dev)
+             echo "Key" $key"
 
              aws s3api get-object --bucket ${{ env.client_bucket }} \
              --key $key client.zip
