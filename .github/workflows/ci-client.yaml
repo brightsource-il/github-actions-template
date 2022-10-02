@@ -23,7 +23,7 @@ jobs:
     name: Client unit tests
     runs-on: ubuntu-latest
     # continue-on-error needs to be deleted once there are real tests
-    # continue-on-error: true
+    continue-on-error: true
     permissions:
       contents: read
     steps:
