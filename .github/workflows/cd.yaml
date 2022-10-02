@@ -79,6 +79,7 @@ jobs:
              
       - name: Deploy helm chart
         run: |
+             helm dependency build helm/umbrella
              helm upgrade bse-${{ inputs.env }} helm/umbrella \
              --namespace ${{ inputs.env }}
              --install \
