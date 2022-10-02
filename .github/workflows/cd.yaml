@@ -16,6 +16,9 @@ on:
       branch:
         required: true
         type: string
+      default_bucket_region:
+        type: string
+        default: 'us-east-1'
 
 
 permissions:
@@ -23,7 +26,8 @@ permissions:
 
 env:
   cluster_name:  eks-${{ inputs.env }}-${{ inputs.region }}
-  bucket_name: s3-charts-dev-us-east-1
+  charts_bucket: s3-charts-dev-us-east-1
+  client_bucket: s3-client-dev-us-east-1
 
 
 jobs:
@@ -47,19 +51,25 @@ jobs:
     name: Deployment
     runs-on: ubuntu-latest
     environment: ${{ inputs.account }}
-    # needs: env-check
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ inputs.default_bucket_region }}
     steps:
       - name: Download Helm chart
         run: |
-             buildId=$(aws s3api list-objects --bucket ${{ env.bucket_name }} \
-             | jq -e '[.Contents[] | select(.Key|test("${{ inputs.branch }}.zip")).Key | split("-") | .[0]] | max' | sed 's/"//g')
+             function getKey() {
+             aws s3api list-objects --bucket $1 | \
+             jq -e --arg branch $2 \
+             '. as $parent | [.Contents[].Key | split("/")[1] | select(test($branch+".zip")) | split("-")[0] | tonumber] 
+             | max | tostring | . as $buildId |
+             $parent.Contents[].Key | select(test($buildId+"-"))' | sed 's/"//g'
+             }
+
+             key=$(getKey ${{ env.charts_bucket }} ${{ inputs.branch }})
 
              aws s3api get-object --bucket ${{ env.bucket_name }} \
-             --key "${buildId}-${{ inputs.branch }}.zip" \
-             "chart.zip"
+             --key $key chart.zip
 
              unzip chart.zip
 
@@ -78,15 +88,29 @@ jobs:
              -f helm/umbrella/${{ inputs.env }}_values.yaml \
              -f helm/umbrella/versions.yaml
 
-      - name: Deploy client
+      - name: Download client
         run: |
-             id=$(curl \
-             -H "Accept: application/vnd.github+json" \
-             -H "Authorization: Bearer ${{ github.token }}" \
-             https://api.github.com/repos/brightsource-il/aws-poc/actions/artifacts \
-             | jq -e '[.artifacts[] | select(.name|test("client")) | .id ] | max')
+             function getKey() {
+             aws s3api list-objects --bucket $1 | \
+             jq -e --arg branch $2 \
+             '. as $parent | [.Contents[].Key | split("/")[1] | select(test($branch+".zip")) | split("-")[0] | tonumber] 
+             | max | tostring | . as $buildId |
+             $parent.Contents[].Key | select(test($buildId+"-"))' | sed 's/"//g'
+             }
+
+             key=$(getKey ${{ env.charts_bucket }} ${{ inputs.branch }} || getKey ${{ env.charts_bucket }} dev)
+
+             aws s3api get-object --bucket ${{ env.bucket_name }} \
+             --key $key client.zip
+
+      # - name: Deploy client
+      #   run: |
+      #        aws s3api put-object \
+      #           --acl private \
+      #           --bucket s3-client-dev-${{ secrets.AWS_CI_REGION }} \
+      #           --body ${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip \
+      #           --key dev/${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip
 
 
 
 
- # [.Contents[] | select(.Key|test("-develop.zip")).Key | split("-") | .[0]] | max
