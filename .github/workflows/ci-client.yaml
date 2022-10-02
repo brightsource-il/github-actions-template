@@ -95,7 +95,7 @@ jobs:
         if: ${{ github.event_name == 'push' }} 
         run: |
               cd ${{ inputs.context_path }}
-              zip -r ${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip /dist
+              zip -r ${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip dist
               
               aws s3api get-bucket-versioning --bucket s3-client-dev-${{ secrets.AWS_CI_REGION }} 1>/dev/null || \
               aws s3api create-bucket --acl private --bucket s3-client-dev-${{ secrets.AWS_CI_REGION }} && \
