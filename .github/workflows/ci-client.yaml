@@ -101,7 +101,7 @@ jobs:
               --lifecycle-configuration  file://./.github/templates/client-lifecycle-policy.json
 
               cd ${{ inputs.context_path }}
-              zip -r ${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip /dist
+              zip -r ${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip dist
 
               if [ ${{ steps.branch_name.outputs.branch_name }} != 'dev' ]; then
                 aws s3api put-object \
