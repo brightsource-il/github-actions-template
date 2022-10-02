@@ -15,7 +15,7 @@ on:
       environment:
         type: string
         default: "479886561928"
-        description: Default dev env
+        description: Default dev account
 
         
 env:
@@ -90,7 +90,7 @@ jobs:
              if [ ${{ github.event_name == 'push' }} ]; then
                docker buildx build \
                -o type=registry \
-               -t ${{ inputs.environment }}.${{ env.repository }}:${{ github.run_number }} \
+               -t ${{ inputs.environment }}.${{ env.repository }}:${{ github.run_id }} \
                -t ${{ inputs.environment }}.${{ env.repository }}:${{ steps.branch_name.outputs.branch_name }} \
                -t ${{ inputs.environment }}.${{ env.repository }}:${{ github.sha }} \
                -f ${{ inputs.dockerfile_path }} \
@@ -98,7 +98,7 @@ jobs:
              else
                docker buildx build \
                -o type=image \
-               -t ${{ inputs.environment }}.${{ env.repository }}:${{ github.run_number }} \
+               -t ${{ inputs.environment }}.${{ env.repository }}:${{ github.run_id }} \
                -t ${{ inputs.environment }}.${{ env.repository }}:${{ steps.branch_name.outputs.branch_name }} \
                -t ${{ inputs.environment }}.${{ env.repository }}:${{ github.sha }} \
                -f ${{ inputs.dockerfile_path }} \
@@ -158,9 +158,11 @@ jobs:
               done
               cat helm/umbrella/versions.yaml
 
+      # This step publishes the chart with the created versions.yaml file to an S3 bucket, it checks if the bucket exists and creates it if not and attaches a lifecycle policy.
+      # If triggered by the "dev" branch, the chart will be uploaded to "dev" folder, otherwise to "temp" folder.
       - name: Publish chart to S3 bucket
         run: |
-              zip -r ${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip helm
+              zip -r ${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}.zip helm
               
               aws s3api get-bucket-versioning --bucket s3-charts-dev-${{ secrets.AWS_CI_REGION }} 1>/dev/null || \
               aws s3api create-bucket --acl private --bucket s3-charts-dev-${{ secrets.AWS_CI_REGION }} && \
@@ -172,12 +174,12 @@ jobs:
                 aws s3api put-object \
                 --acl private \
                 --bucket s3-charts-dev-${{ secrets.AWS_CI_REGION }} \
-                --body ${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip \
-                --key temp/${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip
+                --body ${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}.zip \
+                --key temp/${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}.zip
               else
                 aws s3api put-object \
                 --acl private \
                 --bucket s3-charts-dev-${{ secrets.AWS_CI_REGION }} \
-                --body ${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip \
-                --key dev/${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip
+                --body ${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}.zip \
+                --key dev/${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}.zip
               fi
