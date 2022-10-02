@@ -115,10 +115,10 @@ jobs:
              app_bucket=$(aws s3 ls | grep s3-app-${{ inputs.env }}-${{ inputs.region }})
 
              aws s3api put-object \
-                --acl private \
-                --bucket $app_bucket \
-                --body dist \
-                --key dist
+             --acl private \
+             --bucket $app_bucket \
+             --body dist \
+             --key dist
 
 
 
