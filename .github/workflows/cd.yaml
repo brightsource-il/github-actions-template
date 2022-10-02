@@ -58,7 +58,7 @@ jobs:
     steps:
       - name: Download Helm chart
         run: |
-             echo ${{ github.run_id	}}
+             set -Eeuo pipefail
              function getKey() {
                aws s3api list-objects --bucket $1 | \
                jq -e --arg branch $2 \
