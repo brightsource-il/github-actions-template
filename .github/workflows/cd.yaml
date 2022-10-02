@@ -67,11 +67,11 @@ jobs:
                $parent.Contents[].Key | select(test($buildId+"-"))' | sed 's/"//g'
              }
 
-             key=$(getKey ${{ env.charts_bucket }} ${{ inputs.branch }})
-             echo "Key: $key"
+             chart_key=$(getKey ${{ env.charts_bucket }} ${{ inputs.branch }})
+             echo "Key: $chart_key"
 
              aws s3api get-object --bucket ${{ env.charts_bucket }} \
-             --key $key chart.zip
+             --key $chart_key chart.zip
 
              unzip chart.zip
 
@@ -102,11 +102,11 @@ jobs:
                $parent.Contents[].Key | select(test($buildId+"-"))' | sed 's/"//g'
              }
 
-             key=$(getKey ${{ env.charts_bucket }} ${{ inputs.branch }} || getKey ${{ env.client_bucket }} dev)
-             echo "Key: $key"
+             client_key=$(getKey ${{ env.client_bucket }} ${{ inputs.branch }} || getKey ${{ env.client_bucket }} dev)
+             echo "Key: $client_key"
 
              aws s3api get-object --bucket ${{ env.client_bucket }} \
-             --key $key client.zip
+             --key $client_key client.zip
 
       # - name: Deploy client
       #   run: |
