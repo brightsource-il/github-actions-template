@@ -87,7 +87,7 @@ jobs:
              --create-namespace \
              --dependency-update \
              --wait \
-             -f helm/umbrella/${{ inputs.env }}_values.yaml \
+             -f helm/umbrella/values_${{ inputs.env }}.yaml \
              -f helm/umbrella/versions.yaml
 
       - name: Download client
