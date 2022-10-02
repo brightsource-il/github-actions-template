@@ -16,7 +16,6 @@ on:
       branch:
         required: true
         type: string
-        default: 'dev'
       default_bucket_region:
         type: string
         default: 'us-east-1'
