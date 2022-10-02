@@ -114,12 +114,4 @@ jobs:
         run: |
              app_bucket=$(aws s3api list-buckets | jq -e '.Buckets[].Name | select(test("s3-app-${{ inputs.env }}-${{ inputs.region }}"))' | sed 's/"//g')
 
-             aws s3api put-object \
-             --acl private \
-             --bucket $app_bucket \
-             --body dist \
-             --key dist
-
-
-
-
+             aws s3 cp ./dist s3://$app_bucket/dist --recursive
