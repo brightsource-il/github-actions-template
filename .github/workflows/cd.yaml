@@ -108,13 +108,17 @@ jobs:
              aws s3api get-object --bucket ${{ env.client_bucket }} \
              --key $client_key client.zip
 
-      # - name: Deploy client
-      #   run: |
-      #        aws s3api put-object \
-      #           --acl private \
-      #           --bucket s3-client-dev-${{ secrets.AWS_CI_REGION }} \
-      #           --body ${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip \
-      #           --key dev/${{ github.run_number }}-${{ steps.branch_name.outputs.branch_name }}.zip
+             unzip client.zip
+
+      - name: Deploy client
+        run: |
+             app_bucket=$(aws s3 ls | grep s3-app-${{ inputs.env }}-${{ inputs.region }})
+
+             aws s3api put-object \
+                --acl private \
+                --bucket $app_bucket \
+                --body dist \
+                --key dist
 
 
 
