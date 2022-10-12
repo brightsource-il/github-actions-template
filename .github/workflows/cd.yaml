@@ -66,12 +66,11 @@ jobs:
             ###check  this 
       - name: Deploy helm chart
         run: |
-            #  if [ -f helm/umbrella/values_${{ inputs.env }}.yaml ]; then
-            #    envfile="-f helm/umbrella/values_${{ inputs.env }}.yaml"
-            #  else
-            #    envfile=""
-            #  fi
-            envfile=""
+             if [ -f helm/umbrella/values_${{ inputs.env }}.yaml ]; then
+               envfile="-f helm/umbrella/values_${{ inputs.env }}.yaml"
+             else
+               envfile=""
+             fi
              helm dependency build helm/umbrella
              helm upgrade bse-${{ inputs.env }} helm/umbrella \
              --namespace ${{ inputs.env }} \
