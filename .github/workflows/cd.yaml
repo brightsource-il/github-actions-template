@@ -62,8 +62,6 @@ jobs:
       - name: Update kube config
         run: aws eks --region ${{ inputs.region }} update-kubeconfig --name ${{ env.cluster_name }}
 
-
-            ###check  this 
       - name: Deploy helm chart
         run: |
              if [ -f helm/umbrella/values_${{ inputs.env }}.yaml ]; then
@@ -81,8 +79,6 @@ jobs:
              --wait \
              -f helm/umbrella/common.yaml $envfile \
              -f helm/umbrella/versions.yaml
-
-## add comoon.yaml file
 
       - name: Download client
         run: |
