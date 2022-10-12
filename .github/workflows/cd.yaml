@@ -31,22 +31,6 @@ env:
 
 
 jobs:
-  # env-check:
-  #   name: Environment check
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #       github-env: ${{ steps.check-env.outputs.env }}
-  #   steps:
-  #     - name: Check if not personal env
-  #       id: check-env
-  #       run: |
-  #            if [ ${{ inputs.env }} != "dev" ] && [ ${{ inputs.env }} != "qa" ] && [ ${{ inputs.env }} != "staging" ] && [ ${{ inputs.env }} != "prod" ]
-  #            then
-  #              echo "::set-output name=env::dev"
-  #            else
-  #              echo "::set-output name=env::${{ inputs.env }}"
-  #            fi
-
   cd:
     name: Deployment
     runs-on: ubuntu-latest
@@ -77,9 +61,17 @@ jobs:
 
       - name: Update kube config
         run: aws eks --region ${{ inputs.region }} update-kubeconfig --name ${{ env.cluster_name }}
-             
+
+
+            ###check  this 
       - name: Deploy helm chart
         run: |
+             if [ -f helm/umbrella/values_${{ inputs.env }}.yaml ]; then
+               envfile="-f helm/umbrella/values_${{ inputs.env }}.yaml"
+             else
+               envfile=""
+             fi
+
              helm dependency build helm/umbrella
              helm upgrade bse-${{ inputs.env }} helm/umbrella \
              --namespace ${{ inputs.env }} \
@@ -88,8 +80,10 @@ jobs:
              --create-namespace \
              --dependency-update \
              --wait \
-             -f helm/umbrella/values_${{ inputs.env }}.yaml \
+             -f helm/umbrella/common.yaml $envfile \
              -f helm/umbrella/versions.yaml
+
+## add comoon.yaml file
 
       - name: Download client
         run: |
