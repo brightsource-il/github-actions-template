@@ -17,8 +17,20 @@ context_path - path to the context(docker build start location)<br>
 service_name - the name of the service being built<br>
 
 The pipeline will run unit tests, followed by building and pushing the services image to an ECR, if the specified ECR does not exist it will create it.<br>
-The image tags that will be pushed are: run_id, branch_name, the github commit SHA.<br><br>
+The image tags that will be pushed are: `run_id`, `branch_name`, `the github commit SHA`.<br><br>
 Once the image has been succefully pushed, the updated helm chart will be published to an S3 bucket:<br>
 A new version.yaml file will be created with the latest tags of the triggering branch for all services, if the no tag is found for the branch name the "dev" branch will be used as the tag.
 This file is created inside the main umbrella folder, the whole helm chart is zipped and published to an S3 bucket.<br>
 if the S3 bucket does no exist, it will be created by the workflow.
+
+### CI-client
+The CI client workflow jobs:<br>
+1. run client unit test
+2. build and publish client artifacts
+
+inputs:<br>
+context_path - path to the context(client build start location)<br>
+service_name - the name of the service being built<br>
+
+As in the previous workflow, the pipeline will run unit tests, build and push the clinet artifacts to an S3 bucket, as the client is NOT dockerized.<br>
+The artifacts will be uploaded as a zip file, named: `${run_id}_${branch_name}.zip`
