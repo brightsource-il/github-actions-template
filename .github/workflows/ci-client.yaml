@@ -62,6 +62,15 @@ jobs:
     steps:  
       - name: Checkout repository
         uses: actions/checkout@v3
+
+      # Checking out infra repository for the S3 life cycle policy .json
+      - name: Checkout infra repository
+        uses: actions/checkout@v3
+        with:
+          ssh-key: ${{ secrets.INFRA_SSH_PRIVATE_KEY }}
+          repository: brightsource-il/cloud-infrastructure
+          ref: 'stasl-feature'
+          path: infra         
         
       - name: Setup Node.js environment
         uses: actions/setup-node@v3.4.1
@@ -98,7 +107,7 @@ jobs:
               aws s3api create-bucket --acl private --bucket s3-client-dev-${{ secrets.AWS_CI_REGION }} && \
               aws s3api put-bucket-versioning --bucket s3-client-dev-${{ secrets.AWS_CI_REGION }} --versioning-configuration Status=Enabled && \
               aws s3api put-bucket-lifecycle-configuration --bucket s3-client-dev-${{ secrets.AWS_CI_REGION }} \
-              --lifecycle-configuration  file://./.github/templates/client-lifecycle-policy.json
+              --lifecycle-configuration  file://./infra/.github/templates/client-lifecycle-policy.json
 
               cd ${{ inputs.context_path }}
               zip -r ${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}.zip dist
