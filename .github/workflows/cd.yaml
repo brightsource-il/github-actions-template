@@ -101,6 +101,13 @@ jobs:
 
       - name: Deploy client
         run: |
+             cat << EOF > dist/assets/config.json
+             { 
+                 "environment":{
+                     "baseUrl":"bff.${{ inputs.env }}.brightsourceenergy.net"
+                 }
+             }
+             EOF
+              
              app_bucket=$(aws s3api list-buckets | jq -e '.Buckets[].Name | select(test("s3-app-${{ inputs.env }}-${{ inputs.region }}"))' | sed 's/"//g')
-
              aws s3 cp ./dist s3://$app_bucket/dist --recursive
