@@ -120,8 +120,11 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Checkout infra repository
+        uses: actions/checkout@v2
+        with:
+          ssh-key: ${{ secrets.INFRA_SSH_PRIVATE_KEY }}
+          repository: brightsource-il/cloud-infrastructure@stasl-feature
 
       - name: Replace branch name bad chars
         id: branch_name
