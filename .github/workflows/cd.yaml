@@ -34,12 +34,23 @@ jobs:
   cd:
     name: Deployment
     runs-on: ubuntu-latest
-    environment: ${{ inputs.account }}
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_DEFAULT_REGION: ${{ inputs.default_bucket_region }}
     steps:
+      - name: Configure AWS Credentials "DEV"
+        if: ${{ inputs.env != 'prod' }}
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+          aws-region: ${{ inputs.region }}
+
+      - name: Configure AWS Credentials "PROD"
+        if: ${{ inputs.env == 'prod' }}
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
+          aws-region: ${{ inputs.region }}
+
       - name: Download Helm chart
         run: |
              set -Eeuo pipefail
@@ -104,10 +115,10 @@ jobs:
              cat << EOF > dist/assets/config.json
              { 
                  "environment":{
-                     "baseUrl":"bff.${{ inputs.env }}.brightsourceenergy.net"
+                     "baseUrl": "http://bff.${{ inputs.env }}.brightsourceenergy.net"
                  }
              }
              EOF
-              
+
              app_bucket=$(aws s3api list-buckets | jq -e '.Buckets[].Name | select(test("s3-app-${{ inputs.env }}-${{ inputs.region }}"))' | sed 's/"//g')
              aws s3 cp ./dist s3://$app_bucket/dist --recursive
