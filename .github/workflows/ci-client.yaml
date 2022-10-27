@@ -12,10 +12,9 @@ on:
       context_path:
         required: true
         type: string
-      environment:
+      aws_ci_region:
         type: string
-        default: "479886561928"
-        description: Default dev account
+        default: 'us-east-1'
 
 jobs:
   # Client, not dockerized
@@ -51,11 +50,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     name: Client build and upload
-    environment: ${{ inputs.environment }}
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}   
-      AWS_DEFAULT_REGION: ${{ secrets.AWS_CI_REGION }}       
     needs: test
     permissions:
       contents: read
@@ -63,6 +57,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Configure AWS Credentials "DEV"
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+          aws-region: ${{ inputs.aws_ci_region }}
+          
       # Checking out infra repository for the S3 life cycle policy .json
       - name: Checkout infra repository
         uses: actions/checkout@v3
@@ -103,10 +104,10 @@ jobs:
       - name: Publish client artifact to S3 bucket
         if: ${{ github.event_name == 'push' }} 
         run: |              
-              aws s3api get-bucket-versioning --bucket s3-client-dev-${{ secrets.AWS_CI_REGION }} 1>/dev/null || \
-              aws s3api create-bucket --acl private --bucket s3-client-dev-${{ secrets.AWS_CI_REGION }} && \
-              aws s3api put-bucket-versioning --bucket s3-client-dev-${{ secrets.AWS_CI_REGION }} --versioning-configuration Status=Enabled && \
-              aws s3api put-bucket-lifecycle-configuration --bucket s3-client-dev-${{ secrets.AWS_CI_REGION }} \
+              aws s3api get-bucket-versioning --bucket s3-client-dev-${{ inputs.aws_ci_region }} 1>/dev/null || \
+              aws s3api create-bucket --acl private --bucket s3-client-dev-${{ inputs.aws_ci_region }} && \
+              aws s3api put-bucket-versioning --bucket s3-client-dev-${{ inputs.aws_ci_region }} --versioning-configuration Status=Enabled && \
+              aws s3api put-bucket-lifecycle-configuration --bucket s3-client-dev-${{ inputs.aws_ci_region }} \
               --lifecycle-configuration  file://./infra/.github/templates/client-lifecycle-policy.json
 
               cd ${{ inputs.context_path }}
@@ -115,13 +116,13 @@ jobs:
               if [ ${{ steps.branch_name.outputs.branch_name }} != 'dev' ]; then
                 aws s3api put-object \
                 --acl private \
-                --bucket s3-client-dev-${{ secrets.AWS_CI_REGION }} \
+                --bucket s3-client-dev-${{ inputs.aws_ci_region }} \
                 --body ${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}.zip \
                 --key temp/${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}.zip
               else
                 aws s3api put-object \
                 --acl private \
-                --bucket s3-client-dev-${{ secrets.AWS_CI_REGION }} \
+                --bucket s3-client-dev-${{ inputs.aws_ci_region }} \
                 --body ${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}.zip \
                 --key dev/${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}.zip
               fi
