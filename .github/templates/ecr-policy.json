@@ -1,0 +1,35 @@
+{
+    "rules": [
+      {
+        "action": {
+          "type": "expire"
+        },
+        "selection": {
+          "countType": "sinceImagePushed",
+          "countUnit": "days",
+          "countNumber": 99999,
+          "tagStatus": "tagged",
+          "tagPrefixList": [
+            "develop",
+            "main",
+            "release"
+          ]
+        },
+        "description": "Keep images with tags \"develop\", \"main\" or \"release\".",
+        "rulePriority": 1
+      },
+      {
+        "rulePriority": 2,
+        "description": "Expire all images after 10 days, (The images found with the rules above will not be affected since their priority is higher).",
+        "selection": {
+          "tagStatus": "any",
+          "countType": "sinceImagePushed",
+          "countUnit": "days",
+          "countNumber": 10
+        },
+        "action": {
+          "type": "expire"
+        }
+      }
+    ]
+  }
