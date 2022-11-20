@@ -6,6 +6,10 @@ on:
       dockerfile_path:
         required: true
         type: string
+      build-args:
+        type: string
+        description: "List of build-time variables"
+        required: false
       service_name:
         required: true
         type: string
@@ -95,6 +99,8 @@ jobs:
 
       # Only push image to registry on "push" events.
       - name: Docker build and push
+        with:
+          build-args:${{ inputs.args }}
         run: |
           if [ ${{ github.event_name == 'push' }} ]; then
             docker buildx build \
