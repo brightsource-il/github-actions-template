@@ -98,12 +98,11 @@ jobs:
             echo "::set-output name=branch_name::$name"
           fi
 
-      # Only push image to registry on "push" events.
       - name: Docker build and push
         uses: docker/build-push-action@v3
         with:
           context: ${{ inputs.context_path }}
-          push: ${{ github.event_name == 'push' }}
+          push: ${{ github.event_name == 'push' }}  # Only push image to registry on "push" events.
           tags: 
             ${{ inputs.aws_ci_account }}.${{ env.repository }}:${{ github.run_id }},
             ${{ inputs.aws_ci_account }}.${{ env.repository }}:${{ steps.branch_name.outputs.branch_name }},
