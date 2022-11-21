@@ -108,7 +108,7 @@ jobs:
             ${{ inputs.aws_ci_account }}.${{ env.repository }}:${{ steps.branch_name.outputs.branch_name }},
             ${{ inputs.aws_ci_account }}.${{ env.repository }}:${{ github.sha }}
           file: ${{ inputs.dockerfile_path }} 
-          build-args: 
+          build-args: |
             BSII_NUGET_URL=${{ secrets.BSII_NUGET_URL }}
             BSII_NUGET_USER=${{ secrets.BSII_NUGET_USER }}
             BSII_NUGET_PASSWORD=${{ secrets.BSII_NUGET_PASSWORD }}
