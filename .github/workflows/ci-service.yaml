@@ -67,8 +67,6 @@ jobs:
 
       - name: Setup Docker buildx
         uses: docker/setup-buildx-action@v1
-        with:
-          build-args: BSII_NUGET_URL=${{ secrets.BSII_NUGET_URL }}, BSII_NUGET_USER=${{ secrets.BSII_NUGET_USER }}, BSII_NUGET_PASSWORD=${{ secrets.BSII_NUGET_PASSWORD }}
       - name: Registry check/creation
         run: |
           aws ecr describe-repositories --repository-names ${{ inputs.service_name }} \
@@ -88,7 +86,6 @@ jobs:
           password: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
           ecr: true
           logout: true
-          build-args: BSII_NUGET_URL=${{ secrets.BSII_NUGET_URL }}, BSII_NUGET_USER=${{ secrets.BSII_NUGET_USER }}, BSII_NUGET_PASSWORD=${{ secrets.BSII_NUGET_PASSWORD }}
 
       - name: Replace branch name bad chars
         id: branch_name
@@ -112,6 +109,8 @@ jobs:
             ${{ inputs.aws_ci_account }}.${{ env.repository }}:${{ steps.branch_name.outputs.branch_name }},
             ${{ inputs.aws_ci_account }}.${{ env.repository }}:${{ github.sha }}
           file: ${{ inputs.dockerfile_path }} 
+          build-args: BSII_NUGET_URL=${{ secrets.BSII_NUGET_URL }}, BSII_NUGET_USER=${{ secrets.BSII_NUGET_USER }}, BSII_NUGET_PASSWORD=${{ secrets.BSII_NUGET_PASSWORD }}
+
 
 
   helm-publish:
