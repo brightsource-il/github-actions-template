@@ -99,7 +99,7 @@ jobs:
           fi
 
       - name: Docker build and push
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v3.2.0
         with:
           context: ${{ inputs.context_path }}
           push: ${{ github.event_name == 'push' }}  # Only push image to registry on "push" events.
