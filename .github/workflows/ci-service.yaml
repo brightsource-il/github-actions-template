@@ -88,6 +88,7 @@ jobs:
           password: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
           ecr: true
           logout: true
+          build-args: BSII_NUGET_URL=${{ secrets.BSII_NUGET_URL }}, BSII_NUGET_USER=${{ secrets.BSII_NUGET_USER }}, BSII_NUGET_PASSWORD=${{ secrets.BSII_NUGET_PASSWORD }}
 
       - name: Replace branch name bad chars
         id: branch_name
