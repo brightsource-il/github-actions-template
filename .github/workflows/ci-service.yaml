@@ -39,11 +39,10 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 6.0.x
-          source-url:  ${{ secrets.BSII_NUGET_URL }}
-        env:
-          NUGET_AUTH_TOKEN: ${{ secrets.BSII_NUGET_USER }}:${{ secrets.BSII_NUGET_PASSWORD }}
       - name: Restore dependencies
-        run: dotnet restore ${{ inputs.context_path }}
+        run: |
+          nuget sources Add -Name ArtifactoryV2 -Source ${{ secrets.BSII_NUGET_URL }} -username ${{ secrets.BSII_NUGET_USER }} -password ${{ secrets.BSII_NUGET_PASSWORD }}
+          dotnet restore ${{ inputs.context_path }}
       - name: Build
         run: dotnet build --no-restore ${{ inputs.context_path }}
       - name: Test
