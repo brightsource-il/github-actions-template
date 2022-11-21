@@ -103,24 +103,16 @@ jobs:
 
       # Only push image to registry on "push" events.
       - name: Docker build and push
-        run: |
-          if [ ${{ github.event_name == 'push' }} ]; then
-            docker buildx build \
-            -o type=registry \
-            -t ${{ inputs.aws_ci_account }}.${{ env.repository }}:${{ github.run_id }} \
-            -t ${{ inputs.aws_ci_account }}.${{ env.repository }}:${{ steps.branch_name.outputs.branch_name }} \
-            -t ${{ inputs.aws_ci_account }}.${{ env.repository }}:${{ github.sha }} \
-            -f ${{ inputs.dockerfile_path }} \
-            ${{ inputs.context_path }}
-          else
-            docker buildx build \
-            -o type=image \
-            -t ${{ inputs.aws_ci_account }}.${{ env.repository }}:${{ github.run_id }} \
-            -t ${{ inputs.aws_ci_account }}.${{ env.repository }}:${{ steps.branch_name.outputs.branch_name }} \
-            -t ${{ inputs.aws_ci_account }}.${{ env.repository }}:${{ github.sha }} \
-            -f ${{ inputs.dockerfile_path }} \
-            ${{ inputs.context_path }}    
-          fi
+        uses: docker/build-push-action@v3
+        with:
+          context: ${{ inputs.context_path }}
+          push: ${{ github.event_name == 'push' }}
+          tags: 
+            ${{ inputs.aws_ci_account }}.${{ env.repository }}:${{ github.run_id }},
+            ${{ inputs.aws_ci_account }}.${{ env.repository }}:${{ steps.branch_name.outputs.branch_name }},
+            ${{ inputs.aws_ci_account }}.${{ env.repository }}:${{ github.sha }}
+          file: ${{ inputs.dockerfile_path }} 
+
 
   helm-publish:
     runs-on: ubuntu-latest
