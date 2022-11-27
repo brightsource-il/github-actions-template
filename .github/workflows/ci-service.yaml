@@ -3,6 +3,9 @@ name: CI service
 on:
   workflow_call:
     inputs:
+      solution_file:
+        required: true
+        type: string
       dockerfile_path:
         required: true
         type: string
@@ -35,7 +38,7 @@ jobs:
     uses: ./.github/workflows/resharper.yaml
     secrets:  inherit
     with:
-      context_path: ${{ inputs.context_path }}
+      context_path: ${{ inputs.solution_file }}
 
   build-push-ecr:
     uses: ./.github/workflows/aws-ecr.yaml

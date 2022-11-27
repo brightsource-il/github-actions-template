@@ -3,7 +3,7 @@ name: ReSharper
 on:
   workflow_call:
     inputs:
-      context_path:
+      solution_file:
         required: true
         type: string
 
@@ -17,4 +17,4 @@ jobs:
       - name: resharper
         uses: glassechidna/resharper-action@master
         with:
-          solution: ${{ inputs.context_path }}
+          solution: ${{ inputs.solution_file }}
