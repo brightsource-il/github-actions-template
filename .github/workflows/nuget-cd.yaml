@@ -7,9 +7,6 @@ on:
         default: "[]"
         required: true
         type: string
-      context_path:
-        required: true
-        type: string
       version:
         required: true
         type: string
