@@ -34,7 +34,7 @@ jobs:
     with:
       context_path: ${{ inputs.context_path }}
 
-  codeql:
+  resharper:
     uses: ./.github/workflows/resharper.yaml
     secrets:  inherit
     with:
