@@ -29,7 +29,9 @@ jobs:
         run: |
           dotnet nuget add source ${{ secrets.BSII_NUGET_URL }} -n ArtifactoryV2   -u ${{ secrets.BSII_NUGET_USER }} -p ${{ secrets.BSII_NUGET_PASSWORD }} --store-password-in-clear-text
           dotnet restore ${{ inputs.context_path }}
-      - name: Build
-        run: dotnet pack --no-restore ${{ inputs.context_path }} -p:PackageVersion=${{ inputs.version }}
-      - name: Test
-        run: dotnet nuget push ${{ secrets.BSII_NUGET_URL }} -Source Artifactory
+      - name: Pack
+        run: |
+          cd ${{ inputs.context_path }}
+          dotnet pack -c Release -o out -p:PackageVersion=${{ inputs.version }}
+      - name: Push
+        run: dotnet nuget push ${{ inputs.context_path }}/out/*.nupkg -Source Artifactory
