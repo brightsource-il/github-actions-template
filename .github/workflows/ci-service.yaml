@@ -34,11 +34,9 @@ jobs:
     with:
       context_path: ${{ inputs.context_path }}
 
-  resharper:
-    uses: ./.github/workflows/resharper.yaml
+  codeql:
+    uses: ./.github/workflows/codeql.yaml
     secrets:  inherit
-    with:
-      solution_file: ${{ inputs.solution_file }}
 
   build-push-ecr:
     uses: ./.github/workflows/aws-ecr.yaml
