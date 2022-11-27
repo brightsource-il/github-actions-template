@@ -36,6 +36,7 @@ jobs:
     secrets:  inherit
     needs: test
     with:
+      context_path: ${{ inputs.context_path }}
       aws_ci_region: ${{ inputs.aws_ci_region }}
       aws_ci_account: ${{ inputs.aws_ci_account }}
       service_name: ${{ inputs.service_name }}
