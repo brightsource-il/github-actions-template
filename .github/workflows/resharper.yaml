@@ -1,0 +1,23 @@
+name: ReSharper
+
+on:
+  workflow_call:
+    inputs:
+      solution_file:
+        required: true
+        type: string
+
+jobs:
+  resharper:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      
+      - name: Inspect code
+        uses: muno92/resharper_inspectcode@1.6.3
+        with:
+          solutionPath: ${{ inputs.solution_file }}
+          include: |
+            **.cs
+            **.cshtml
