@@ -14,8 +14,8 @@ permissions:
   contents: read
   
 jobs:
-  test:
-    name: Service unit tests
+  pack-push:
+    name: Push and Pack a Nuget
     runs-on: ubuntu-latest    
     environment: ${{ inputs.environment }}
     permissions:
