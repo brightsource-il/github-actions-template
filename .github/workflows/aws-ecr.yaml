@@ -24,7 +24,7 @@ env:
 jobs:
   build-push:
     runs-on: ubuntu-latest
-    name: Service build and push
+    name: Service build and push to AWS ECR
     permissions:
       contents: read
     steps:
