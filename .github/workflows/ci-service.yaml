@@ -26,7 +26,7 @@ on:
 
 jobs:
   test:
-    uses: ./.github/workflows/dotnet-test.yaml
+    uses: ./.github/workflows/dotnet-build-test.yaml
     secrets:  inherit
     with:
       context_path: ${{ inputs.context_path }}
