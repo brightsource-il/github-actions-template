@@ -34,6 +34,7 @@ jobs:
   build-push-ecr:
     uses: ./.github/workflows/aws-ecr.yaml
     secrets:  inherit
+    needs: test
     with:
       aws_ci_region: ${{ inputs.aws_ci_region }}
       aws_ci_account: ${{ inputs.aws_ci_account }}
@@ -43,6 +44,7 @@ jobs:
   helm-publish:
     uses: ./.github/workflows/aws-helm-publish.yaml
     secrets:  inherit
+    needs: build-push-ecr
     with:
       aws_ci_region: ${{ inputs.aws_ci_region }}
     
