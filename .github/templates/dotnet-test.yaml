@@ -1,0 +1,25 @@
+name: 'Client unit tests'
+inputs:
+  context_path:
+    required: true
+    type: string
+runs-on: 'ubuntu-latest'
+permissions:
+  contents: read
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@
+  - name: Setup Node.js environment
+    uses: actions/setup-node@v3.4.1
+    with:
+      node-version: 
+  - name: Install dev dependencies/chrome
+    working-directory: ${{ inputs.context_path }}
+    run: |
+         npm install
+         npm install -g @angular/cli@13.3.4
+         wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+         sudo dpkg -i google-chrome-stable_current_amd64.d
+  - name: Test client
+    working-directory: ${{ inputs.context_path }}
+    run: ng test --browsers ChromeHeadless --watch=false
