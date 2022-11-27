@@ -17,12 +17,11 @@ permissions:
 
 env:
   repository: dkr.ecr.${{ inputs.aws_ci_region }}.amazonaws.com/${{ inputs.service_name }}
-   
+
 jobs:
   build-push:
     runs-on: ubuntu-latest
     name: Service build and push
-    needs: test
     permissions:
       contents: read
     steps:
