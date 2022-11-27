@@ -1,9 +1,12 @@
-name: Build & Test a Dotnet Project
+name: Pack & Push a Dotnet Nuget 
 
 on:
   workflow_call:
     inputs:
       context_path:
+        required: true
+        type: string
+      version:
         required: true
         type: string
 permissions:
@@ -27,6 +30,6 @@ jobs:
           dotnet nuget add source ${{ secrets.BSII_NUGET_URL }} -n ArtifactoryV2   -u ${{ secrets.BSII_NUGET_USER }} -p ${{ secrets.BSII_NUGET_PASSWORD }} --store-password-in-clear-text
           dotnet restore ${{ inputs.context_path }}
       - name: Build
-        run: dotnet build --no-restore ${{ inputs.context_path }}
+        run: dotnet pack --no-restore ${{ inputs.context_path }} -p:PackageVersion=${{ inputs.version }}
       - name: Test
-        run: dotnet test --no-build --verbosity normal ${{ inputs.context_path }}
+        run: dotnet nuget push ${{ secrets.BSII_NUGET_URL }} -Source Artifactory
