@@ -1,0 +1,20 @@
+name: ReSharper
+
+on:
+  workflow_call:
+    inputs:
+      context_path:
+        required: true
+        type: string
+
+jobs:
+  resharper:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      
+      - name: resharper
+        uses: glassechidna/resharper-action@master
+        with:
+          solution: ${{ inputs.context_path }}
