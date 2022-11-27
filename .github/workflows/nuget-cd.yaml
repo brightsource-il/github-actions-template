@@ -3,6 +3,10 @@ name: Pack & Push a Dotnet Nuget
 on:
   workflow_call:
     inputs:
+      projects:
+        default: "[]"
+        required: true
+        type: string
       context_path:
         required: true
         type: string
@@ -19,6 +23,10 @@ jobs:
     environment: ${{ inputs.environment }}
     permissions:
       contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        path: ${{ fromJson(inputs.projects) }}
     steps:
       - uses: actions/checkout@v3
       - name: Setup .NET
@@ -28,10 +36,10 @@ jobs:
       - name: Restore dependencies
         run: |
           dotnet nuget add source ${{ secrets.BSII_NUGET_URL }} -n ArtifactoryV2   -u ${{ secrets.BSII_NUGET_USER }} -p ${{ secrets.BSII_NUGET_PASSWORD }} --store-password-in-clear-text
-          dotnet restore ${{ inputs.context_path }}
+          dotnet restore ${{ matrix.path }}
       - name: Pack
         run: |
-          cd ${{ inputs.context_path }}
+          cd ${{ matrix.path  }}
           dotnet pack -c Release -o out -p:PackageVersion=${{ inputs.version }}
       - name: Push
-        run: dotnet nuget push ${{ inputs.context_path }}/out/*.nupkg -s ArtifactoryV2
+        run: dotnet nuget push ${{ matrix.path  }}/out/*.nupkg -s ArtifactoryV2
