@@ -16,7 +16,8 @@ permissions:
   contents: read
 
 env:
-  repository: dkr.ecr.${{ inputs.aws_ci_region }}.amazonaws.com/${{ inputs.service_name }} 
+  repository: dkr.ecr.${{ inputs.aws_ci_region }}.amazonaws.com/${{ inputs.service_name }}
+   
 jobs:
   build-push:
     runs-on: ubuntu-latest
