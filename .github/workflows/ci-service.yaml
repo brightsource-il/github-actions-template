@@ -41,6 +41,14 @@ jobs:
       aws_ci_account: ${{ inputs.aws_ci_account }}
       service_name: ${{ inputs.service_name }}
 
+  build-push-jfrog:
+    uses: ./.github/workflows/jfrog-docker.yaml
+    secrets:  inherit
+    needs: test
+    with:
+      context_path: ${{ inputs.context_path }}
+      service_name: ${{ inputs.service_name }}
+
   helm-publish:
     uses: ./.github/workflows/aws-helm-publish.yaml
     secrets:  inherit
