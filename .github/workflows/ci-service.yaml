@@ -40,7 +40,6 @@ jobs:
       aws_ci_account: ${{ inputs.aws_ci_account }}
       service_name: ${{ inputs.service_name }}
 
-
   helm-publish:
     uses: ./.github/workflows/aws-helm-publish.yaml
     secrets:  inherit

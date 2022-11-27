@@ -9,6 +9,9 @@ on:
       service_name:
         required: true
         type: string
+      context_path:
+        required: true
+        type: string
       aws_ci_account:
         type: string
         default: "479886561928"
