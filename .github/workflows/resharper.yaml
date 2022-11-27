@@ -25,7 +25,7 @@ jobs:
           dotnet nuget add source ${{ secrets.BSII_NUGET_URL }} -n ArtifactoryV2   -u ${{ secrets.BSII_NUGET_USER }} -p ${{ secrets.BSII_NUGET_PASSWORD }} --store-password-in-clear-text
           dotnet restore ${{ inputs.context_path }}
       - name: Inspect code
-        uses: muno92/resharper_inspectcode@1.6.3
+        uses: muno92/resharper_inspectcode@1.6.3 #see security of it - let's fork our own if we don't trust it
         with:
           solutionPath: ${{ inputs.solution_file }}
           include: |
