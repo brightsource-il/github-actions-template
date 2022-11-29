@@ -12,6 +12,7 @@ on:
 
 jobs:
   resharper:
+    name: ReSharper Report
     runs-on: ubuntu-latest
     steps:
       - name: checkout
