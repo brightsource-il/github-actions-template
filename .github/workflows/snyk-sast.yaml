@@ -3,6 +3,9 @@ name: Snyk SAST
 on:
   workflow_call:
    inputs:
+      solution_file:
+        required: true
+        type: string
       context_path:
         required: true
         type: string
@@ -31,3 +34,5 @@ jobs:
         uses: snyk/actions/dotnet@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high --file=${{ inputs.context_path }}
