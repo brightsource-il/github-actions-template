@@ -36,7 +36,7 @@ jobs:
           dotnet restore ${{ inputs.context_path }}
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/dotnet@master
-        continue-on-error: true # To make sure that SARIF upload gets called
+        continue-on-error: ${{ inputs.upload-to-github-code-scanning }} # To make sure that SARIF upload gets called
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
