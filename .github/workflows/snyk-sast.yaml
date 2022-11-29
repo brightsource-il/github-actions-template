@@ -35,4 +35,4 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: --severity-threshold=high --file=${{ inputs.context_path }}
+          args: --severity-threshold=high --file=${{ inputs.solution_file }}
