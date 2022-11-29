@@ -1,0 +1,19 @@
+name: Snyk SAST
+
+on:
+  workflow_call:
+permissions:
+  contents: read
+  
+jobs:
+  pack-push:
+    name: Push and Pack a Nuget
+    runs-on: ubuntu-latest    
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@master
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
