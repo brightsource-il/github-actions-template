@@ -6,6 +6,10 @@ on:
       solution_file:
         required: true
         type: string
+      upload-to-github-code-scanning:
+        required: false
+        type: boolean
+        default: false
       context_path:
         required: true
         type: string
@@ -37,6 +41,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           args: --severity-threshold=high --file=${{ inputs.solution_file }} --sarif-file-output=snyk.sarif
+        if: ${{ inputs.upload-to-github-code-scanning }}
       - name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v2
         with:
