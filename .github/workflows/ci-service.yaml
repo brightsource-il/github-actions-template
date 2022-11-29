@@ -25,6 +25,22 @@ on:
       aws_ci_account:
         type: string
         default: "479886561928"
+      enable-snyk:
+        required: false
+        type: boolean
+        default: true
+      enable-resharper:
+        required: false
+        type: boolean
+        default: true
+      enable-ecr:
+        required: false
+        type: boolean
+        default: true
+      enable-jfrog:
+        required: false
+        type: boolean
+        default: true
 
 
 jobs:
@@ -35,6 +51,7 @@ jobs:
       context_path: ${{ inputs.context_path }}
 
   snyk:
+    if: ${{ inputs.enable-snyk }}
     uses: ./.github/workflows/snyk-sast.yaml
     secrets:  inherit
     with:
@@ -42,6 +59,7 @@ jobs:
       context_path: ${{ inputs.context_path }}
 
   resharper:
+    if: ${{ inputs.enable-resharper }}
     uses: ./.github/workflows/resharper.yaml
     secrets:  inherit
     with:
@@ -49,6 +67,7 @@ jobs:
       context_path: ${{ inputs.context_path }}
 
   build-push-ecr:
+    if: ${{ inputs.enable-ecr }}
     uses: ./.github/workflows/aws-ecr.yaml
     secrets:  inherit
     needs: test
@@ -59,6 +78,7 @@ jobs:
       service_name: ${{ inputs.service_name }}
 
   build-push-jfrog:
+    if: ${{ inputs.enable-jfrog }}
     uses: ./.github/workflows/jfrog-docker.yaml
     secrets:  inherit
     needs: test
