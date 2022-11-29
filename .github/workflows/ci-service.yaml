@@ -37,7 +37,9 @@ jobs:
   snyk:
     uses: ./.github/workflows/snyk-sast.yaml
     secrets:  inherit
-
+    with:
+      context_path: ${{ inputs.context_path }}
+      
   resharper:
     uses: ./.github/workflows/resharper.yaml
     secrets:  inherit
