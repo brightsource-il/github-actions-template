@@ -1,0 +1,34 @@
+name: ReSharper
+
+on:
+  workflow_call:
+    inputs:
+      solution_file:
+        required: true
+        type: string
+      context_path:
+        required: true
+        type: string
+
+jobs:
+  resharper:
+    name: ReSharper Report
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+      - name: Restore dependencies
+        run: |
+          dotnet nuget add source ${{ secrets.BSII_NUGET_URL }} -n ArtifactoryV2   -u ${{ secrets.BSII_NUGET_USER }} -p ${{ secrets.BSII_NUGET_PASSWORD }} --store-password-in-clear-text
+          dotnet restore ${{ inputs.context_path }}
+      - name: Inspect code
+        uses: muno92/resharper_inspectcode@1.6.3 #see security of it - let's fork our own if we don't trust it
+        with:
+          solutionPath: ${{ inputs.solution_file }}
+          include: |
+            **.cs
+            **.cshtml

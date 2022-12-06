@@ -1,0 +1,48 @@
+name: Snyk SAST
+
+on:
+  workflow_call:
+   inputs:
+      solution_file:
+        required: true
+        type: string
+      upload-to-github-code-scanning:
+        required: false
+        type: boolean
+        default: false
+      context_path:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  
+jobs:
+  snyk:
+    name: Run Snyk to check for vulnerabilitie
+    runs-on: ubuntu-latest    
+    permissions:
+      contents: read
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+      - name: Restore dependencies
+        run: |
+          dotnet nuget add source ${{ secrets.BSII_NUGET_URL }} -n ArtifactoryV2   -u ${{ secrets.BSII_NUGET_USER }} -p ${{ secrets.BSII_NUGET_PASSWORD }} --store-password-in-clear-text
+          dotnet restore ${{ inputs.context_path }}
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/dotnet@master
+        continue-on-error: ${{ inputs.upload-to-github-code-scanning }} # To make sure that SARIF upload gets called
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high --file=${{ inputs.solution_file }} --sarif-file-output=snyk.sarif
+      - name: Upload result to GitHub Code Scanning
+        if: ${{ inputs.upload-to-github-code-scanning }}
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: snyk.sarif
