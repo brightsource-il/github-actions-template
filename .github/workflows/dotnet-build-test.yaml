@@ -8,12 +8,11 @@ on:
         type: string
 permissions:
   contents: read
-  
+
 jobs:
   test:
     name: Service unit tests
-    runs-on: ubuntu-latest    
-    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
