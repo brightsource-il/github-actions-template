@@ -1,0 +1,25 @@
+name: Python Test
+
+on:
+  workflow_call:
+    inputs:
+      python-path:
+        required: false
+        type: string
+
+  workflow_dispatch:
+    inputs:
+      test:
+        description: "test"
+        required: false
+        default: "test"
+        type: string
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare repo
+        uses: actions/checkout@master
+      - name: Test
+        uses: onichandame/python-test-action@master
