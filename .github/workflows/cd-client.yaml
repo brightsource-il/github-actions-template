@@ -50,7 +50,9 @@ jobs:
         with:
           node-version:  ${{ inputs.node_version }}
           cache: 'npm'
-          cache-dependency-path: ${{ inputs.context_path }}/package-lock.json  
+          cache-dependency-path: ${{ inputs.context_path }}/package-lock.json
+      - run: npm install
+        working-directory: ${{ inputs.context_path }}
       - uses: mansagroup/nrwl-nx-action@v3
         with:
           targets: build
