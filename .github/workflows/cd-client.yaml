@@ -84,8 +84,8 @@ jobs:
               --lifecycle-configuration  file://./infra/.github/templates/client-lifecycle-policy.json
 
               cd ${{ inputs.context_path }}
-              zip -r ${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}-${{ inputs.project}}.zip dist/apps/${{ inputs.project}}
                 aws s3api put-object \
                 --acl private \
                 --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} \
                 --body dist/apps/${{ inputs.project}} \
+                --key ${{ inputs.project}}
