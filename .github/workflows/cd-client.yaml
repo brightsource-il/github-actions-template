@@ -74,12 +74,14 @@ jobs:
       # This step publishes the client artifact to an S3 bucket if triggered by "push" event, it checks if the bucket exists and creates it if not and attaches a lifecycle policy.
       # If triggered by the "dev" branch, the artkfact will be uploaded to "dev" folder, otherwise to "temp" folder.
       # - name: Publish client artifact to S3 bucket #TODO: add push to artifactory
-      - uses: shallwefootball/s3-upload-action@master
+      - uses:  jakejarvis/s3-sync-action@master
         name: Upload S3
         id: S3
         with:
-          aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
-          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
-          aws_bucket: s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}}
-          source_dir: ${{ inputs.context_path }}/dist/apps/${{ inputs.project}}
-          destination_dir: ${{ inputs.project}}
+         args: --acl public-read --follow-symlinks --delete
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+          AWS_S3_BUCKET: s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}}
+          SOURCE_DIR: ${{ inputs.context_path }}/dist/apps/${{ inputs.project}}
+          AWS_REGION: ${{ inputs.aws_ci_region}}
