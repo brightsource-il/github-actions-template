@@ -57,7 +57,8 @@ jobs:
         with:
           targets: build
           nxCloud: true
-          args: ${{ inputs.context_path }}
+          workingDirectory: ${{ inputs.context_path }}
+          args: ${{ inputs.args }}
           projects: ${{ inputs.project  }}
 
       - name: Replace branch name bad chars
