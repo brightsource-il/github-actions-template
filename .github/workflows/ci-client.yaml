@@ -6,7 +6,10 @@ on:
       context_path:
         required: true
         type: string
-
+      enable-snyk:
+        required: false
+        type: boolean
+        default: true
 
 
 jobs:
