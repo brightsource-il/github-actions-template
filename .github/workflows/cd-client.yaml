@@ -73,7 +73,7 @@ jobs:
 
       # This step publishes the client artifact to an S3 bucket if triggered by "push" event, it checks if the bucket exists and creates it if not and attaches a lifecycle policy.
       # If triggered by the "dev" branch, the artkfact will be uploaded to "dev" folder, otherwise to "temp" folder.
-      - name: Publish client artifact to S3 bucket
+      - name: Publish client artifact to S3 bucket #TODO: add push to artifactory
        
         # if: ${{ github.event_name == 'push' }} 
         run: |              
