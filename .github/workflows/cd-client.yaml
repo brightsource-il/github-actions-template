@@ -24,12 +24,10 @@ jobs:
     needs: test
     permissions:
       contents: read
-    env:
-        projects: '[${{ inputs.projects }}]'
     strategy:
        fail-fast: false
        matrix:
-        path: ${{ fromJson(env.projects) }}
+        path: ${{ fromJson('['+ inputs.projects " ']'") }}
 
     steps:  
       - name: Checkout repository
