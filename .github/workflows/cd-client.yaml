@@ -1,0 +1,97 @@
+name: CD client to S3
+
+on:
+  workflow_call:
+    inputs:
+      context_path:
+        required: true
+        type: string
+      args:
+        required: true
+        type: string
+      projects:
+        required: true
+        type: string
+      aws_ci_region:
+        type: string
+        default: 'us-east-1'
+
+jobs:
+
+  build-and-push-to-s3:
+    runs-on: ubuntu-latest
+    name: Client build and upload
+    needs: test
+    permissions:
+      contents: read
+    strategy:
+       fail-fast: false
+       matrix:
+        path: ${{ fromJson([inputs.projects]) }}
+    steps:  
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials "DEV"
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+          aws-region: ${{ inputs.aws_ci_region }}
+          
+      # Checking out infra repository for the S3 life cycle policy .json
+      - name: Checkout infra repository
+        uses: actions/checkout@v3
+        with:
+          ssh-key: ${{ secrets.INFRA_SSH_PRIVATE_KEY }}
+          repository: brightsource-il/cloud-infrastructure
+          ref: 'stasl-feature'
+          path: infra         
+        
+      - uses: mansagroup/nrwl-nx-action@v3
+        with:
+          targets: build
+          nxCloud: true
+          workingDirectory: ${{ inputs.context_path }}
+          args: ${{ inputs.context_path }}
+          projects: ${{ matrix.path  }}
+
+      - name: Replace branch name bad chars
+        id: branch_name
+        run: |
+             if [ ${{ github.event_name }} == "pull_request" ]; then
+               name=$( echo '${{ github.head_ref }}' | tr '/' '-' )
+               echo "::set-output name=branch_name::$name"
+             else
+               name=$( echo '${{ github.ref_name }}' | tr '/' '-' )
+               echo "::set-output name=branch_name::$name"
+             fi
+
+      # This step publishes the client artifact to an S3 bucket if triggered by "push" event, it checks if the bucket exists and creates it if not and attaches a lifecycle policy.
+      # If triggered by the "dev" branch, the artkfact will be uploaded to "dev" folder, otherwise to "temp" folder.
+      - name: Publish client artifact to S3 bucket
+       
+        if: ${{ github.event_name == 'push' }} 
+        run: |              
+              aws s3api get-bucket-versioning --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ matrix.path}} 1>/dev/null || \
+              aws s3api create-bucket --acl private --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ matrix.path}} && \
+              aws s3api put-bucket-versioning --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ matrix.path}} --versioning-configuration Status=Enabled && \
+              aws s3api put-bucket-lifecycle-configuration --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ matrix.path}} \
+              --lifecycle-configuration  file://./infra/.github/templates/client-lifecycle-policy.json
+
+              cd ${{ inputs.context_path }}
+              zip -r ${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}-${{ matrix.path}}.zip dist/${{ matrix.path}}
+
+              if [ ${{ steps.branch_name.outputs.branch_name }} != 'dev' ]; then
+                aws s3api put-object \
+                --acl private \
+                --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ matrix.path}} \
+                --body ${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}-${{ matrix.path}}.zip \
+                --key temp/${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}-${{ matrix.path}}.zip
+              else
+                aws s3api put-object \
+                --acl private \
+                --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ matrix.path}} \
+                --body ${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}-${{ matrix.path}}.zip \
+                --key dev/${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}-${{ matrix.path}}.zip
+              fi

@@ -52,7 +52,7 @@ jobs:
 
   snyk:
     if: ${{ inputs.enable-snyk }}
-    uses: ./.github/workflows/snyk-sast.yaml
+    uses: ./.github/workflows/snyk-sast-dotnet.yaml
     secrets:  inherit
     with:
       solution_file: ${{ inputs.solution_file }}

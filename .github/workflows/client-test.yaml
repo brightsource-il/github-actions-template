@@ -1,0 +1,39 @@
+name: Client Test
+
+on:
+  workflow_call:
+    inputs:
+      context_path:
+        required: true
+        type: string
+
+jobs:
+  # Client, not dockerized
+  test:
+    name: Client unit tests
+    runs-on: ubuntu-latest
+    # continue-on-error needs to be deleted once there are real tests
+    continue-on-error: true
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3.4.1
+        with:
+          node-version: 14
+
+      - name: Install dev dependencies/chrome
+        working-directory: ${{ inputs.context_path }}
+        run: |
+             npm install
+             npm install -g @angular/cli@13.3.4
+             wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+             sudo dpkg -i google-chrome-stable_current_amd64.deb
+
+      - name: Test client
+        working-directory: ${{ inputs.context_path }}
+        run: ng test --browsers ChromeHeadless --watch=false
+
