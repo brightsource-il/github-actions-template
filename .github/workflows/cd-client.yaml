@@ -73,19 +73,27 @@ jobs:
 
       # This step publishes the client artifact to an S3 bucket if triggered by "push" event, it checks if the bucket exists and creates it if not and attaches a lifecycle policy.
       # If triggered by the "dev" branch, the artkfact will be uploaded to "dev" folder, otherwise to "temp" folder.
-      - name: Publish client artifact to S3 bucket #TODO: add push to artifactory
-       
-        # if: ${{ github.event_name == 'push' }} 
-        run: |              
-              aws s3api get-bucket-versioning --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} 1>/dev/null || \
-              aws s3api create-bucket --acl private --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} && \
-              aws s3api put-bucket-versioning --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} --versioning-configuration Status=Enabled && \
-              aws s3api put-bucket-lifecycle-configuration --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} \
-              --lifecycle-configuration  file://./infra/.github/templates/client-lifecycle-policy.json
+      # - name: Publish client artifact to S3 bucket #TODO: add push to artifactory
+      - uses: shallwefootball/s3-upload-action@master
+        name: Upload S3
+        id: S3
+        with:
+          aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          aws_secret_access_key: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          aws_bucket: s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}}
+          source_dir: ${{ inputs.context_path }}/dist/apps/${{ inputs.project}}
 
-              cd ${{ inputs.context_path }}
-                aws s3api put-object \
-                --acl private \
-                --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} \
-                --body dist/apps/${{ inputs.project}} \
-                --key ${{ inputs.project}}
+        # if: ${{ github.event_name == 'push' }} 
+        # run: |              
+        #       aws s3api get-bucket-versioning --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} 1>/dev/null || \
+        #       aws s3api create-bucket --acl private --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} && \
+        #       aws s3api put-bucket-versioning --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} --versioning-configuration Status=Enabled && \
+        #       aws s3api put-bucket-lifecycle-configuration --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} \
+        #       --lifecycle-configuration  file://./infra/.github/templates/client-lifecycle-policy.json
+
+        #       cd ${{ inputs.context_path }}
+        #         aws s3api put-object \
+        #         --acl private \
+        #         --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} \
+        #         --body dist/apps/${{ inputs.project}} \
+        #         --key ${{ inputs.project}}
