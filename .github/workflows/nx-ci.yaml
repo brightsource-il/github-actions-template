@@ -7,7 +7,6 @@ on:
         required: true
         type: string
       node_version:
-        required: true
         type: number
         default: 16
 
