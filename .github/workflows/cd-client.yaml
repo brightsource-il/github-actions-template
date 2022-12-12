@@ -57,7 +57,6 @@ jobs:
         with:
           targets: build
           nxCloud: true
-          workingDirectory: ${{ inputs.context_path }}
           args: ${{ inputs.context_path }}
           projects: ${{ inputs.project  }}
 
