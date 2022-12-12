@@ -9,7 +9,7 @@ on:
       args:
         required: true
         type: string
-      projects:
+      project:
         required: true
         type: string
       aws_ci_region:
@@ -23,10 +23,6 @@ jobs:
     name: Client build and upload
     permissions:
       contents: read
-    strategy:
-       fail-fast: false
-       matrix:
-        path: ${{ fromJson(inputs.projects) }}
 
     steps:  
       - name: Checkout repository
@@ -54,7 +50,7 @@ jobs:
           nxCloud: true
           workingDirectory: ${{ inputs.context_path }}
           args: ${{ inputs.context_path }}
-          projects: ${{ matrix.path  }}
+          projects: ${{ inputs.project  }}
 
       - name: Replace branch name bad chars
         id: branch_name
@@ -73,25 +69,25 @@ jobs:
        
         if: ${{ github.event_name == 'push' }} 
         run: |              
-              aws s3api get-bucket-versioning --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ matrix.path}} 1>/dev/null || \
-              aws s3api create-bucket --acl private --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ matrix.path}} && \
-              aws s3api put-bucket-versioning --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ matrix.path}} --versioning-configuration Status=Enabled && \
-              aws s3api put-bucket-lifecycle-configuration --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ matrix.path}} \
+              aws s3api get-bucket-versioning --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} 1>/dev/null || \
+              aws s3api create-bucket --acl private --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} && \
+              aws s3api put-bucket-versioning --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} --versioning-configuration Status=Enabled && \
+              aws s3api put-bucket-lifecycle-configuration --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} \
               --lifecycle-configuration  file://./infra/.github/templates/client-lifecycle-policy.json
 
               cd ${{ inputs.context_path }}
-              zip -r ${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}-${{ matrix.path}}.zip dist/${{ matrix.path}}
+              zip -r ${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}-${{ inputs.project}}.zip dist/${{ inputs.project}}
 
               if [ ${{ steps.branch_name.outputs.branch_name }} != 'dev' ]; then
                 aws s3api put-object \
                 --acl private \
-                --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ matrix.path}} \
-                --body ${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}-${{ matrix.path}}.zip \
-                --key temp/${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}-${{ matrix.path}}.zip
+                --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} \
+                --body ${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}-${{ inputs.project}}.zip \
+                --key temp/${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}-${{ inputs.project}}.zip
               else
                 aws s3api put-object \
                 --acl private \
-                --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ matrix.path}} \
-                --body ${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}-${{ matrix.path}}.zip \
-                --key dev/${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}-${{ matrix.path}}.zip
+                --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} \
+                --body ${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}-${{ inputs.project}}.zip \
+                --key dev/${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}-${{ inputs.project}}.zip
               fi
