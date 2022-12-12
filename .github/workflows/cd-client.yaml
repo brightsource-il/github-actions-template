@@ -21,7 +21,6 @@ jobs:
   build-and-push-to-s3:
     runs-on: ubuntu-latest
     name: Client build and upload
-    needs: test
     permissions:
       contents: read
     strategy:
