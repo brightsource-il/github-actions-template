@@ -79,7 +79,7 @@ jobs:
         id: S3
         with:
           aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
-          aws_secret_access_key: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
           aws_bucket: s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}}
           source_dir: ${{ inputs.context_path }}/dist/apps/${{ inputs.project}}
 
