@@ -15,7 +15,9 @@ on:
       aws_ci_region:
         type: string
         default: 'us-east-1'
-
+      node_version:
+        type: number
+        default: 16
 jobs:
 
   build-and-push-to-s3:
@@ -44,7 +46,11 @@ jobs:
           repository: brightsource-il/cloud-infrastructure
           ref: 'stasl-feature'
           path: infra         
-        
+      - uses: actions/setup-node@v3
+        with:
+          node-version:  ${{ inputs.node_version }}
+          cache: 'npm'
+          cache-dependency-path: ${{ inputs.context_path }}/package-lock.json  
       - uses: mansagroup/nrwl-nx-action@v3
         with:
           targets: build
