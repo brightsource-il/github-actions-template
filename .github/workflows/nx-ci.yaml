@@ -25,6 +25,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version:  ${{ inputs.node_version }}
+      - run: cd {{ inputs.context_path }}
       - run: npm install
 
       - uses: mansagroup/nrwl-nx-action@v3
