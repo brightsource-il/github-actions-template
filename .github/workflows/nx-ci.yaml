@@ -25,8 +25,11 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version:  ${{ inputs.node_version }}
-      - run: cd {{ inputs.context_path }}
+          cache: 'npm'
+          cache-dependency-path: package-lock.
+
       - run: npm install
+        working-directory: ${{ inputs.context_path }}
 
       - uses: mansagroup/nrwl-nx-action@v3
         with:
