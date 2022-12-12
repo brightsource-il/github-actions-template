@@ -76,7 +76,7 @@ jobs:
       # If triggered by the "dev" branch, the artkfact will be uploaded to "dev" folder, otherwise to "temp" folder.
       - name: Publish client artifact to S3 bucket
        
-        if: ${{ github.event_name == 'push' }} 
+        # if: ${{ github.event_name == 'push' }} 
         run: |              
               aws s3api get-bucket-versioning --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} 1>/dev/null || \
               aws s3api create-bucket --acl private --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} && \
