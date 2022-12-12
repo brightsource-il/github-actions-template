@@ -3,44 +3,10 @@ name: CI service
 on:
   workflow_call:
     inputs:
-      solution_file:
-        required: true
-        type: string
-      dockerfile_path:
-        required: true
-        type: string
-      build-args:
-        type: string
-        description: "List of build-time variables"
-        required: false
-      service_name:
-        required: true
-        type: string
       context_path:
         required: true
         type: string
-      aws_ci_region:
-        type: string
-        default: "us-east-1"
-      aws_ci_account:
-        type: string
-        default: "479886561928"
-      enable-snyk:
-        required: false
-        type: boolean
-        default: true
-      enable-resharper:
-        required: false
-        type: boolean
-        default: true
-      enable-ecr:
-        required: false
-        type: boolean
-        default: true
-      enable-jfrog:
-        required: false
-        type: boolean
-        default: true
+
 
 
 jobs:
