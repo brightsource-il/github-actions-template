@@ -52,7 +52,7 @@ jobs:
           cache-dependency-path: ${{ inputs.context_path }}/package-lock.json
       - run: npm install
         working-directory: ${{ inputs.context_path }}
-      - uses: mansagroup/nrwl-nx-action@v3
+      - uses: mansagroup/nrwl-nx-action@main #change to latest after they fix nx clud support of --scan arg
         with:
           targets: build
           nxCloud: true
