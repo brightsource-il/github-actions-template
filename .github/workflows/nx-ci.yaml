@@ -23,4 +23,5 @@ jobs:
       - uses: mansagroup/nrwl-nx-action@v3
         with:
           targets: lint, test, build
+          workingDirectory: ${{ inputs.context_path }}
 
