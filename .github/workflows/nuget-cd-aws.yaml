@@ -50,4 +50,4 @@ jobs:
           cd ${{ matrix.path  }}
           dotnet pack -c Release -o out -p:PackageVersion=${{ inputs.version }}
       - name: Push
-        run: dotnet nuget push ${{ matrix.path  }}/out/*.nupkg -s brightsource-codeartifact-ui
+        run: dotnet nuget push ${{ matrix.path  }}/out/*.nupkg -s https://brightsource-codeartifact-ui-479886561928.d.codeartifact.us-east-1.amazonaws.com/nuget/test-1-ui/v3/index.json
