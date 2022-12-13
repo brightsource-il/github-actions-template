@@ -78,7 +78,7 @@ jobs:
         name: Upload S3
         id: S3
         with:
-         args: --acl public-read --follow-symlinks --delete
+         args: --acl private
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
