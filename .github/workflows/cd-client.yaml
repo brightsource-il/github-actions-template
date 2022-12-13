@@ -76,17 +76,11 @@ jobs:
       # - name: Publish client artifact to S3 bucket #TODO: add push to artifactory
       - name: Create S3 Bucket
         run: |
-          aws s3 mb  --acl private s3://s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}}
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
-          AWS_DEFAULT_REGION: ${{ inputs.aws_ci_region}}
+          aws s3api create-bucket --acl private --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}}
 
       - uses:  jakejarvis/s3-sync-action@master
         name: Upload S3
         id: S3
-        with:
-         args: 
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
