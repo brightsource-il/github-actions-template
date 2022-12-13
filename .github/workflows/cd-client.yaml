@@ -76,8 +76,12 @@ jobs:
       # - name: Publish client artifact to S3 bucket #TODO: add push to artifactory
       - name: Create S3 Bucket
         run: |
-          aws s3api create-bucket --acl private --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}}
-
+              aws s3api get-bucket-versioning --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} 1>/dev/null || \
+              aws s3api create-bucket --acl private --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} && \
+              aws s3api put-bucket-versioning --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} --versioning-configuration Status=Enabled && \
+              aws s3api put-bucket-lifecycle-configuration --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} \
+              --lifecycle-configuration  file://./infra/.github/templates/client-lifecycle-policy.json
+              
       - uses:  jakejarvis/s3-sync-action@master
         name: Upload S3
         id: S3
