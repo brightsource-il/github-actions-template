@@ -30,12 +30,13 @@ jobs:
     outputs:
       services: ${{ steps.services.outputs.services }}
   ci-service:
+    needs: read_json
     permissions:
       contents: read
     strategy:
       fail-fast: false
       matrix:
-        array:  ${{ fromJson(jobs.read_json.outputs.services) }}
+        array:  ${{ fromJson(needs.read_json.outputs.services) }}
     uses: ./.github/workflows/ci-service.yaml
     secrets: inherit
     name: CI for ${{ matrix.array.service_name }} 
