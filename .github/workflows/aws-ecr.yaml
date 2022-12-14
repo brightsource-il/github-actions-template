@@ -15,6 +15,9 @@ on:
       aws_ci_account:
         type: string
         default: "479886561928"
+      dockerfile_path:
+        type: string
+        default: ""
 permissions:
   contents: read
 

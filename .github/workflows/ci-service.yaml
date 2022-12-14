@@ -78,6 +78,7 @@ jobs:
       aws_ci_region: ${{ inputs.aws_ci_region }}
       aws_ci_account: ${{ inputs.aws_ci_account }}
       service_name: ${{ inputs.service_name }}
+      dockerfile_path: ${{ inputs.dockerfile_path }}
 
   build-push-jfrog:
     if: ${{ inputs.enable-jfrog }}
