@@ -50,4 +50,4 @@ jobs:
           cd ${{ matrix.path  }}
           dotnet pack -c Release -o out -p:PackageVersion=${{ inputs.version }}
       - name: Push
-        run: dotnet nuget push ${{ matrix.path  }}/out/*.nupkg -s "brightsource-codeartifact-ui/test-1-ui"
+        run: dotnet nuget push ${{ matrix.path  }}/out/*.nupkg -s `aws codeartifact get-repository-endpoint --domain brightsource-codeartifact-ui --domain-owner 479886561928 --repository test-1-ui --format nuget --query repositoryEndpoint --output text`
