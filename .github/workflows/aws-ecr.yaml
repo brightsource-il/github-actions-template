@@ -46,7 +46,7 @@ jobs:
           || aws ecr create-repository --repository-name ${{ inputs.service_name }}
       - id: default_ecr_policy
         run: |
-          content=`cat ./.github/templates/ecr-policy.json`
+          content=`curl https://raw.githubusercontent.com/brightsource-il/github-actions-template/main/.github/templates/ecr-policy.json`
           # the following lines are only required for multi line json
           content="${content//'%'/'%25'}"
           content="${content//$'\n'/'%0A'}"
