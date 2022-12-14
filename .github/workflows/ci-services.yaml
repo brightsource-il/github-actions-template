@@ -28,5 +28,3 @@ jobs:
         solution_file: ${{ matrix.solution_file }}
         dockerfile_path: ${{ matrix.dockerfile_path }}
         service_name: ${{ matrix.service_name }}
-        aws_ci_account: ${{ matrix.aws_ci_account }}
-        aws_ci_region: ${{ matrix.aws_ci_region }}
