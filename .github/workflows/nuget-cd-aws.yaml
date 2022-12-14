@@ -15,10 +15,10 @@ on:
         default: "us-east-1"
       codeartifact_repository:
         type: string
-        default: "us-east-1"
+        default: "test-1-ui"
       codeartifact_domain:
         type: string
-        default: "us-east-1"
+        default: "brightsource-codeartifact-ui"
 
 permissions:
   contents: read
@@ -47,7 +47,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
           aws-region: ${{ inputs.aws_ci_region }}
       - name: Login to AWS CodeArtifact
-        run: aws codeartifact login --tool dotnet  --repository ${{ inputs.codeartifact_repository }} --domain ${{ inputs.codeartifact_domain }} --domain-owner 479886561928 --region us-east-1
+        run: aws codeartifact login --tool dotnet  --repository ${{ inputs.codeartifact_repository }} --domain ${{ inputs.codeartifact_domain }}  --region us-east-1
       - name: Restore dependencies
         run: |
           dotnet restore ${{ matrix.path }}
