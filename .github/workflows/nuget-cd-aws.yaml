@@ -41,7 +41,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
           aws-region: ${{ inputs.aws_ci_region }}
       - name: Login to AWS CodeArtifact
-        run: aws codeartifact login --tool nuget --repository test-1-ui --domain brightsource-codeartifact-ui --domain-owner 479886561928 --region us-east-1
+        run: aws codeartifact login --tool dotnet  --repository test-1-ui --domain brightsource-codeartifact-ui --domain-owner 479886561928 --region us-east-1
       - name: Restore dependencies
         run: |
           dotnet restore ${{ matrix.path }}
