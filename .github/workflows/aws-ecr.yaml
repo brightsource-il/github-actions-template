@@ -44,12 +44,20 @@ jobs:
         run: |
           aws ecr describe-repositories --repository-names ${{ inputs.service_name }} \
           || aws ecr create-repository --repository-name ${{ inputs.service_name }}
-
+      - id: default_ecr_policy
+        run: |
+          content=`cat ./.github/templates/ecr-policy.json`
+          # the following lines are only required for multi line json
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          content="${content//$'\r'/'%0D'}"
+          # end of optional handling for multi line json
+          echo "::set-output name=policy::$content"
       - name: Lifecycle policy check/creation
         run: |
           aws ecr get-lifecycle-policy --repository-name ${{ inputs.service_name }} \
           || aws ecr put-lifecycle-policy --repository-name ${{ inputs.service_name }} \
-          --lifecycle-policy-text "file://./.github/templates/ecr-policy.json"
+          --lifecycle-policy-text ${{ steps.default_ecr_policy.policy }}
 
       - name: Login to ECR
         uses: docker/login-action@v2.0.0
