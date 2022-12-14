@@ -47,3 +47,4 @@ jobs:
         solution_file: ${{ matrix.solution_file }}
         dockerfile_path: ${{ matrix.dockerfile_path }}
         build-args: ${{ matrix.build-args }}
+        service_name: ${{ matrix.service_name }}
