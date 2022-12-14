@@ -49,7 +49,7 @@ jobs:
         run: |
           aws ecr get-lifecycle-policy --repository-name ${{ inputs.service_name }} \
           || aws ecr put-lifecycle-policy --repository-name ${{ inputs.service_name }} \
-          --lifecycle-policy-text "https://raw.githubusercontent.com/brightsource-il/github-actions-template/main/.github/templates/ecr-policy.json"
+          --lifecycle-policy-text "file://./.github/templates/ecr-policy.json"
 
       - name: Login to ECR
         uses: docker/login-action@v2.0.0
