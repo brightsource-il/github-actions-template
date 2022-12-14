@@ -57,7 +57,7 @@ jobs:
         run: |
           aws ecr get-lifecycle-policy --repository-name ${{ inputs.service_name }} \
           || aws ecr put-lifecycle-policy --repository-name ${{ inputs.service_name }} \
-          --lifecycle-policy-text ${{ steps.default_ecr_policy.policy }}
+          --lifecycle-policy-text ${{ steps.default_ecr_policy.outputs.policy }}
 
       - name: Login to ECR
         uses: docker/login-action@v2.0.0
