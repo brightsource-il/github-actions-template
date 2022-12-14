@@ -3,22 +3,6 @@ name: CI service
 on:
   workflow_call:
     inputs:
-      solution_file:
-        required: true
-        type: string
-      dockerfile_path:
-        required: true
-        type: string
-      build-args:
-        type: string
-        description: "List of build-time variables"
-        required: false
-      service_name:
-        required: true
-        type: string
-      context_path:
-        required: true
-        type: string
       aws_ci_region:
         type: string
         default: "us-east-1"
@@ -41,7 +25,7 @@ on:
         required: false
         type: boolean
         default: false
-      projects:
+      projects_args:
         default: "[]"
         required: true
         type: string
