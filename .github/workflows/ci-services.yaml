@@ -18,6 +18,8 @@ jobs:
   read_json:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
       - id: services
         run: |
           content=`cat ${{inputs.projects_args}}`
