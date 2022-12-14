@@ -41,6 +41,8 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(inputs.projects_args) }}
     steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
     - uses: ./.github/workflows/ci-service.yaml
       with:
         context_path: ${{ matrix.context_path }}
