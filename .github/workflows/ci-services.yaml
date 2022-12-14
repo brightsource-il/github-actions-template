@@ -20,12 +20,13 @@ jobs:
       contents: read
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(inputs.projects_args) }}
+      matrix:
+        array:  ${{ fromJson(inputs.projects_args) }}
     uses: ./.github/workflows/ci-service.yaml
     secrets: inherit
     name: CI for ${{ matrix.service_name }} 
     with:
-        context_path: ${{ matrix.context_path }}
-        solution_file: ${{ matrix.solution_file }}
-        dockerfile_path: ${{ matrix.dockerfile_path }}
-        service_name: ${{ matrix.service_name }}
+        context_path: ${{ matrix.array.context_path }}
+        solution_file: ${{ matrix.array.solution_file }}
+        dockerfile_path: ${{ matrix.array.dockerfile_path }}
+        service_name: ${{ matrix.array.service_name }}
