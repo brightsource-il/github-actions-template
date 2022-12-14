@@ -80,6 +80,13 @@ jobs:
       service_name: ${{ inputs.service_name }}
       dockerfile_path: ${{ inputs.dockerfile_path }}
 
+  helm-publish:
+    uses: ./.github/workflows/aws-helm-publish.yaml
+    secrets:  inherit
+    needs: build-push-ecr
+    with:
+      aws_ci_region: ${{ inputs.aws_ci_region }}
+
   build-push-jfrog:
     if: ${{ inputs.enable-jfrog }}
     uses: ./.github/workflows/jfrog-docker.yaml
@@ -89,10 +96,5 @@ jobs:
       context_path: ${{ inputs.context_path }}
       service_name: ${{ inputs.service_name }}
 
-  helm-publish:
-    uses: ./.github/workflows/aws-helm-publish.yaml
-    secrets:  inherit
-    needs: build-push-ecr
-    with:
-      aws_ci_region: ${{ inputs.aws_ci_region }}
+
     
