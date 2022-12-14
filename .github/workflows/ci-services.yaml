@@ -9,22 +9,6 @@ on:
       aws_ci_account:
         type: string
         default: "479886561928"
-      enable-snyk:
-        required: false
-        type: boolean
-        default: true
-      enable-resharper:
-        required: false
-        type: boolean
-        default: true
-      enable-ecr:
-        required: false
-        type: boolean
-        default: true
-      enable-jfrog:
-        required: false
-        type: boolean
-        default: false
       projects_args:
         default: "[]"
         required: true
@@ -43,5 +27,6 @@ jobs:
         context_path: ${{ matrix.context_path }}
         solution_file: ${{ matrix.solution_file }}
         dockerfile_path: ${{ matrix.dockerfile_path }}
-        build-args: ${{ matrix.build-args }}
         service_name: ${{ matrix.service_name }}
+        aws_ci_account: ${{ matrix.aws_ci_account }}
+        aws_ci_region: ${{ matrix.aws_ci_region }}
