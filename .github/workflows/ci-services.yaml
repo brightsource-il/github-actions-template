@@ -32,19 +32,14 @@ on:
 
 jobs:
   ci-service:
-    name: Ci Dotnet Service
-    runs-on: ubuntu-latest    
-    environment: ${{ inputs.environment }}
     permissions:
       contents: read
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(inputs.projects_args) }}
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-    - uses: ./.github/workflows/ci-service.yaml
-      with:
+    uses: ./.github/workflows/ci-service.yaml
+    secrets: inherit
+    with:
         context_path: ${{ matrix.context_path }}
         solution_file: ${{ matrix.solution_file }}
         dockerfile_path: ${{ matrix.dockerfile_path }}
