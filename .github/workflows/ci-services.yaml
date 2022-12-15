@@ -13,6 +13,22 @@ on:
         default: "[]"
         required: true
         type: string
+      enable-snyk:
+        required: false
+        type: boolean
+        default: true
+      enable-resharper:
+        required: false
+        type: boolean
+        default: true
+      enable-ecr:
+        required: false
+        type: boolean
+        default: true
+      enable-jfrog:
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   read_json:
@@ -48,3 +64,7 @@ jobs:
         solution_file: ${{ matrix.array.solution_file }}
         dockerfile_path: ${{ matrix.array.dockerfile_path }}
         service_name: ${{ matrix.array.service_name }}
+        enable-snyk: ${{inputs.enable-snyk}}
+        enable-ecr: ${{inputs.enable-ecr}}
+        enable-resharper: ${{inputs.enable-resharper}}
+        enable-jfrog: ${{inputs.enable-jfrog}}
