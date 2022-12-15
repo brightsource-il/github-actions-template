@@ -29,6 +29,7 @@ jobs:
         uses: muno92/resharper_inspectcode@1.6.3 #see security of it - let's fork our own if we don't trust it
         with:
           ignoreIssueType: "notice"
+          minimumSeverity: "warning"
           solutionPath: ${{ inputs.solution_file }}
           include: |
             **.cs
