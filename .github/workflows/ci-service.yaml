@@ -29,6 +29,10 @@ on:
         required: false
         type: boolean
         default: true
+      enable-sonar:
+        required: false
+        type: boolean
+        default: true
       enable-resharper:
         required: false
         type: boolean
@@ -52,6 +56,14 @@ jobs:
     with:
       context_path: ${{ inputs.context_path }}
 
+  sonar:
+    if: ${{ inputs.enable-sonar }}
+    uses: ./.github/workflows/snyk-sast.yaml
+    secrets:  inherit
+    with:
+      solution_file: ${{ inputs.solution_file }}
+      context_path: ${{ inputs.context_path }}
+      
   snyk:
     if: ${{ inputs.enable-snyk }}
     uses: ./.github/workflows/snyk-sast.yaml
