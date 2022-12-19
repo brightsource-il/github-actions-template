@@ -48,6 +48,14 @@ jobs:
         run: |
           New-Item -Path .\.sonar\scanner -ItemType Directory
           dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+      - name: Restore dependencies
+        run: |
+          dotnet nuget add source ${{ secrets.BSII_NUGET_URL }} -n ArtifactoryV2   -u ${{ secrets.BSII_NUGET_USER }} -p ${{ secrets.BSII_NUGET_PASSWORD }} --store-password-in-clear-text
+          dotnet restore ${{ inputs.context_path }}
       - name: Build and analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
@@ -55,4 +63,5 @@ jobs:
         shell: powershell
         run: |
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"brightsource-il_solar-focus-nextgen" /o:"brightsource-il" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
+          dotnet build ${{ inputs.context_path }}
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
