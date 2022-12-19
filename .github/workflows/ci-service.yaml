@@ -58,7 +58,7 @@ jobs:
 
   sonar:
     if: ${{ inputs.enable-sonar }}
-    uses: ./.github/workflows/snyk-sast.yaml
+    uses: ./.github/workflows/sonar-sast.yaml
     secrets:  inherit
     with:
       solution_file: ${{ inputs.solution_file }}
