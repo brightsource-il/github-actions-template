@@ -3,7 +3,7 @@ name: CI Python
 on:
   workflow_call:
     inputs:
-      python-path:
+      unit-path:
         required: false
         type: string
 
@@ -20,4 +20,4 @@ jobs:
     uses: ./.github/workflows/python-unit-test.yaml
     secrets: inherit
     with:
-      python_path: ${{ inputs.python_path }}
+      unit_path: ${{ inputs.unit_path }}

@@ -3,7 +3,7 @@ name: Python Test
 on:
   workflow_call:
     inputs:
-      python-path:
+      unit-path:
         required: false
         type: string
 
@@ -20,6 +20,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Prepare repo
-        uses: actions/checkout@main
+        uses: actions/checkout@master
       - name: Test
         uses: onichandame/python-test-action@master
+        with:
+          python-path: "./Python/bsii_cloud/storage_tests/s3-wrapper_test.py"
+          deps_list: "requirement"
