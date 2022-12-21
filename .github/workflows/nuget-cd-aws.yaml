@@ -18,7 +18,7 @@ on:
         default: "artifactory"
       codeartifact_domain:
         type: string
-        default: "brightsource-codeartifact-ui"
+        default: "brightsource"
 
 permissions:
   contents: read
