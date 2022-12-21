@@ -15,7 +15,7 @@ on:
         default: "us-east-1"
       codeartifact_repository:
         type: string
-        default: "test-1-ui"
+        default: "artifactory"
       codeartifact_domain:
         type: string
         default: "brightsource-codeartifact-ui"
