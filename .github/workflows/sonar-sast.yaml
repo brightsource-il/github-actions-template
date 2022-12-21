@@ -6,10 +6,6 @@ on:
       solution_file:
         required: true
         type: string
-      upload-to-github-code-scanning:
-        required: false
-        type: boolean
-        default: false
       context_path:
         required: true
         type: string
