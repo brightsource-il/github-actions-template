@@ -23,3 +23,10 @@ jobs:
     if: ${{ inputs.enable-snyk }}
     uses: ./.github/workflows/snyk-sast-node.yaml
     secrets:  inherit
+
+  sonar:
+    if: ${{ inputs.enable-sonar }}
+    uses: ./.github/workflows/sonar-sast-client.yaml
+    secrets:  inherit
+    with:
+      context_path: ${{ inputs.context_path }}
