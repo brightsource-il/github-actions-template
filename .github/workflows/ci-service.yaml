@@ -29,6 +29,10 @@ on:
         required: false
         type: boolean
         default: true
+      enable-sonar:
+        required: false
+        type: boolean
+        default: true
       enable-resharper:
         required: false
         type: boolean
@@ -40,8 +44,10 @@ on:
       enable-jfrog:
         required: false
         type: boolean
-        default: true
+        default: false
 
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -50,6 +56,14 @@ jobs:
     with:
       context_path: ${{ inputs.context_path }}
 
+  sonar:
+    if: ${{ inputs.enable-sonar }}
+    uses: ./.github/workflows/sonar-sast.yaml
+    secrets:  inherit
+    with:
+      solution_file: ${{ inputs.solution_file }}
+      context_path: ${{ inputs.context_path }}
+      
   snyk:
     if: ${{ inputs.enable-snyk }}
     uses: ./.github/workflows/snyk-sast-dotnet.yaml
@@ -76,6 +90,14 @@ jobs:
       aws_ci_region: ${{ inputs.aws_ci_region }}
       aws_ci_account: ${{ inputs.aws_ci_account }}
       service_name: ${{ inputs.service_name }}
+      dockerfile_path: ${{ inputs.dockerfile_path }}
+
+  helm-publish:
+    uses: ./.github/workflows/aws-helm-publish.yaml
+    secrets:  inherit
+    needs: build-push-ecr
+    with:
+      aws_ci_region: ${{ inputs.aws_ci_region }}
 
   build-push-jfrog:
     if: ${{ inputs.enable-jfrog }}
@@ -86,10 +108,5 @@ jobs:
       context_path: ${{ inputs.context_path }}
       service_name: ${{ inputs.service_name }}
 
-  helm-publish:
-    uses: ./.github/workflows/aws-helm-publish.yaml
-    secrets:  inherit
-    needs: build-push-ecr
-    with:
-      aws_ci_region: ${{ inputs.aws_ci_region }}
+
     

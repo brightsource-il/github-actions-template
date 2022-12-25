@@ -1,0 +1,70 @@
+name: CI service
+
+on:
+  workflow_call:
+    inputs:
+      aws_ci_region:
+        type: string
+        default: "us-east-1"
+      aws_ci_account:
+        type: string
+        default: "479886561928"
+      projects_args:
+        default: "[]"
+        required: true
+        type: string
+      enable-snyk:
+        required: false
+        type: boolean
+        default: true
+      enable-resharper:
+        required: false
+        type: boolean
+        default: true
+      enable-ecr:
+        required: false
+        type: boolean
+        default: true
+      enable-jfrog:
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  read_json:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v3
+      - id: services
+        run: |
+          content=`cat ${{inputs.projects_args}}`
+          # the following lines are only required for multi line json
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          content="${content//$'\r'/'%0D'}"
+          # end of optional handling for multi line json
+          echo "::set-output name=services::$content"
+    outputs:
+      services: ${{ steps.services.outputs.services }}
+  ci-service:
+    needs: read_json
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        array:  ${{ fromJson(needs.read_json.outputs.services) }}
+    uses: ./.github/workflows/ci-service.yaml
+    secrets: inherit
+    name: CI for ${{ matrix.array.service_name }} 
+    with:
+        context_path: ${{ matrix.array.context_path }}
+        solution_file: ${{ matrix.array.solution_file }}
+        dockerfile_path: ${{ matrix.array.dockerfile_path }}
+        service_name: ${{ matrix.array.service_name }}
+        enable-snyk: ${{inputs.enable-snyk}}
+        enable-ecr: ${{inputs.enable-ecr}}
+        enable-resharper: ${{inputs.enable-resharper}}
+        enable-jfrog: ${{inputs.enable-jfrog}}
