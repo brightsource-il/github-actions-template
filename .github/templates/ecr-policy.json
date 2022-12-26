@@ -12,7 +12,8 @@
           "tagPrefixList": [
             "develop",
             "main",
-            "release"
+            "release",
+            "dev"
           ]
         },
         "description": "Keep images with tags \"develop\", \"main\" or \"release\".",
