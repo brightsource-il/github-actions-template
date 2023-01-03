@@ -123,7 +123,7 @@ jobs:
         with:
           ssh-key: ${{ secrets.INFRA_SSH_PRIVATE_KEY }}
           repository: brightsource-il/cloud-infrastructure
-          ref: 'stasl-feature'
+          ref: 'dev'
 
       - name: Configure AWS Credentials "DEV"
         uses: aws-actions/configure-aws-credentials@v1
