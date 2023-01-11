@@ -1,128 +1,32 @@
-name: CI client
+name: CI service
 
 on:
   workflow_call:
     inputs:
-      dockerfile_path:
-        required: true
-        type: string
-      service_name:
-        required: true
-        type: string
       context_path:
         required: true
         type: string
-      aws_ci_region:
-        type: string
-        default: 'us-east-1'
+      enable-snyk:
+        required: false
+        type: boolean
+        default: true
+
 
 jobs:
-  # Client, not dockerized
-  test:
-    name: Client unit tests
-    runs-on: ubuntu-latest
-    # continue-on-error needs to be deleted once there are real tests
-    continue-on-error: true
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+  nx-ci:
+    uses: ./.github/workflows/nx-ci.yaml
+    secrets:  inherit
+    with:
+      context_path: ${{ inputs.context_path }}
 
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v3.4.1
-        with:
-          node-version: 14
+  snyk:
+    if: ${{ inputs.enable-snyk }}
+    uses: ./.github/workflows/snyk-sast-node.yaml
+    secrets:  inherit
 
-      - name: Install dev dependencies/chrome
-        working-directory: ${{ inputs.context_path }}
-        run: |
-             npm install
-             npm install -g @angular/cli@13.3.4
-             wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-             sudo dpkg -i google-chrome-stable_current_amd64.deb
-
-      - name: Test client
-        working-directory: ${{ inputs.context_path }}
-        run: ng test --browsers ChromeHeadless --watch=false
-
-
-  build:
-    runs-on: ubuntu-latest
-    name: Client build and upload
-    needs: test
-    permissions:
-      contents: read
-    steps:  
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Configure AWS Credentials "DEV"
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
-          aws-region: ${{ inputs.aws_ci_region }}
-          
-      # Checking out infra repository for the S3 life cycle policy .json
-      - name: Checkout infra repository
-        uses: actions/checkout@v3
-        with:
-          ssh-key: ${{ secrets.INFRA_SSH_PRIVATE_KEY }}
-          repository: brightsource-il/cloud-infrastructure
-          ref: 'stasl-feature'
-          path: infra         
-        
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v3.4.1
-        with:
-          node-version: 14
-
-      - name: Install dependencies
-        working-directory: ${{ inputs.context_path }}
-        run: |
-             npm install
-             npm install -g @angular/cli@13.3.4
-
-      - name: Build
-        working-directory: ${{ inputs.context_path }}
-        run: ng build
-
-      - name: Replace branch name bad chars
-        id: branch_name
-        run: |
-             if [ ${{ github.event_name }} == "pull_request" ]; then
-               name=$( echo '${{ github.head_ref }}' | tr '/' '-' )
-               echo "::set-output name=branch_name::$name"
-             else
-               name=$( echo '${{ github.ref_name }}' | tr '/' '-' )
-               echo "::set-output name=branch_name::$name"
-             fi
-
-      # This step publishes the client artifact to an S3 bucket if triggered by "push" event, it checks if the bucket exists and creates it if not and attaches a lifecycle policy.
-      # If triggered by the "dev" branch, the artkfact will be uploaded to "dev" folder, otherwise to "temp" folder.
-      - name: Publish client artifact to S3 bucket
-        if: ${{ github.event_name == 'push' }} 
-        run: |              
-              aws s3api get-bucket-versioning --bucket s3-client-dev-${{ inputs.aws_ci_region }} 1>/dev/null || \
-              aws s3api create-bucket --acl private --bucket s3-client-dev-${{ inputs.aws_ci_region }} && \
-              aws s3api put-bucket-versioning --bucket s3-client-dev-${{ inputs.aws_ci_region }} --versioning-configuration Status=Enabled && \
-              aws s3api put-bucket-lifecycle-configuration --bucket s3-client-dev-${{ inputs.aws_ci_region }} \
-              --lifecycle-configuration  file://./infra/.github/templates/client-lifecycle-policy.json
-
-              cd ${{ inputs.context_path }}
-              zip -r ${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}.zip dist
-
-              if [ ${{ steps.branch_name.outputs.branch_name }} != 'dev' ]; then
-                aws s3api put-object \
-                --acl private \
-                --bucket s3-client-dev-${{ inputs.aws_ci_region }} \
-                --body ${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}.zip \
-                --key temp/${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}.zip
-              else
-                aws s3api put-object \
-                --acl private \
-                --bucket s3-client-dev-${{ inputs.aws_ci_region }} \
-                --body ${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}.zip \
-                --key dev/${{ github.run_id }}-${{ steps.branch_name.outputs.branch_name }}.zip
-              fi
+  sonar:
+    if: ${{ inputs.enable-sonar }}
+    uses: ./.github/workflows/sonar-sast-client.yaml
+    secrets:  inherit
+    with:
+      context_path: ${{ inputs.context_path }}

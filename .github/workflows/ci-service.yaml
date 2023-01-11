@@ -61,12 +61,11 @@ jobs:
     uses: ./.github/workflows/sonar-sast.yaml
     secrets:  inherit
     with:
-      solution_file: ${{ inputs.solution_file }}
       context_path: ${{ inputs.context_path }}
       
   snyk:
     if: ${{ inputs.enable-snyk }}
-    uses: ./.github/workflows/snyk-sast.yaml
+    uses: ./.github/workflows/snyk-sast-dotnet.yaml
     secrets:  inherit
     with:
       solution_file: ${{ inputs.solution_file }}

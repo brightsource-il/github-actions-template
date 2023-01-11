@@ -3,9 +3,6 @@ name: SonarCloud
 on:
   workflow_call:
    inputs:
-      solution_file:
-        required: true
-        type: string
       context_path:
         required: true
         type: string

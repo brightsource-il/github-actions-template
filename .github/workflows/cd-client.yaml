@@ -1,0 +1,93 @@
+name: CD client to S3
+
+on:
+  workflow_call:
+    inputs:
+      context_path:
+        required: true
+        type: string
+      args:
+        type: string
+      project:
+        required: true
+        type: string
+      aws_ci_region:
+        type: string
+        default: 'us-east-1'
+      node_version:
+        type: number
+        default: 16
+jobs:
+
+  build-and-push-to-s3:
+    runs-on: ubuntu-latest
+    name: Client build and upload
+    permissions:
+      contents: read
+
+    steps:  
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Configure AWS Credentials "DEV"
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+          aws-region: ${{ inputs.aws_ci_region }}
+          
+      # Checking out infra repository for the S3 life cycle policy .json
+      - name: Checkout infra repository
+        uses: actions/checkout@v3
+        with:
+          ssh-key: ${{ secrets.INFRA_SSH_PRIVATE_KEY }}
+          repository: brightsource-il/cloud-infrastructure
+          ref: 'stasl-feature'
+          path: infra         
+      - uses: actions/setup-node@v3
+        with:
+          node-version:  ${{ inputs.node_version }}
+          cache: 'npm'
+          cache-dependency-path: ${{ inputs.context_path }}/package-lock.json
+      - run: npm install
+        working-directory: ${{ inputs.context_path }}
+      - uses: mansagroup/nrwl-nx-action@main #change to latest after they fix nx clud support of --scan arg
+        with:
+          targets: build
+          nxCloud: true
+          workingDirectory: ${{ inputs.context_path }}
+          args: ${{ inputs.args }}
+          projects: ${{ inputs.project  }}
+
+      - name: Replace branch name bad chars
+        id: branch_name
+        run: |
+             if [ ${{ github.event_name }} == "pull_request" ]; then
+               name=$( echo '${{ github.head_ref }}' | tr '/' '-' )
+               echo "::set-output name=branch_name::$name"
+             else
+               name=$( echo '${{ github.ref_name }}' | tr '/' '-' )
+               echo "::set-output name=branch_name::$name"
+             fi
+
+      # This step publishes the client artifact to an S3 bucket if triggered by "push" event, it checks if the bucket exists and creates it if not and attaches a lifecycle policy.
+      # If triggered by the "dev" branch, the artkfact will be uploaded to "dev" folder, otherwise to "temp" folder.
+      # - name: Publish client artifact to S3 bucket #TODO: add push to artifactory
+      - name: Create S3 Bucket
+        run: |
+              aws s3api get-bucket-versioning --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} 1>/dev/null || \
+              aws s3api create-bucket --acl private --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} && \
+              aws s3api put-bucket-versioning --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} --versioning-configuration Status=Enabled && \
+              aws s3api put-bucket-lifecycle-configuration --bucket s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}} \
+              --lifecycle-configuration  file://./infra/.github/templates/client-lifecycle-policy.json
+              
+      - uses:  jakejarvis/s3-sync-action@master
+        name: Upload S3
+        id: S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+          AWS_S3_BUCKET: s3-client-dev-${{ inputs.aws_ci_region }}-${{ inputs.project}}
+          SOURCE_DIR: ${{ inputs.context_path }}/dist/apps/${{ inputs.project}}
+          AWS_REGION: ${{ inputs.aws_ci_region}}

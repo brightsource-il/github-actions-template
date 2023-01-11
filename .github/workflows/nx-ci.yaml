@@ -1,0 +1,38 @@
+name: Client CI (NX)
+
+on:
+  workflow_call:
+    inputs:
+      context_path:
+        required: true
+        type: string
+      node_version:
+        type: number
+        default: 16
+
+jobs:
+  nx-ci:
+    name: Client CI (NX)
+    runs-on: ubuntu-latest
+    continue-on-error: false
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v3
+        with:
+          node-version:  ${{ inputs.node_version }}
+          cache: 'npm'
+          cache-dependency-path: ${{ inputs.context_path }}/package-lock.json
+
+      - run: npm install
+        working-directory: ${{ inputs.context_path }}
+
+      - uses: mansagroup/nrwl-nx-action@v3
+        with:
+          targets: lint, test, build
+          workingDirectory: ${{ inputs.context_path }}
+
